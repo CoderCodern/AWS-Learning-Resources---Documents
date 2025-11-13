@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS DVA S3 Quiz - 20 Questions</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #FF9800 0%, #FF6F00 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            background: #f0f0f0;
+            height: 8px;
+            position: relative;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .quiz-content {
+            padding: 40px;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .question-number {
+            background: #667eea;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .question-text {
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .option {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            padding: 15px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .option:hover {
+            background: #e3f2fd;
+            border-color: #2196F3;
+            transform: translateX(5px);
+        }
+
+        .option input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .option.selected {
+            background: #e3f2fd;
+            border-color: #2196F3;
+        }
+
+        .option.correct {
+            background: #c8e6c9;
+            border-color: #4CAF50;
+        }
+
+        .option.incorrect {
+            background: #ffcdd2;
+            border-color: #f44336;
+        }
+
+        .option.disabled {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .explanation {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .explanation.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        .explanation strong {
+            color: #ff6f00;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: space-between;
+        }
+
+        button {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-check {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-check:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .btn-check:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-next {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-next:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.4);
+        }
+
+        .btn-prev {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-prev:hover {
+            background: #e0e0e0;
+        }
+
+        .score-display {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .result-screen {
+            text-align: center;
+            padding: 60px 40px;
+            display: none;
+        }
+
+        .result-screen.show {
+            display: block;
+        }
+
+        .result-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .result-score {
+            font-size: 48px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .result-message {
+            font-size: 24px;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .result-details {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .result-details div {
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .result-details div:last-child {
+            border-bottom: none;
+        }
+
+        .btn-restart {
+            background: linear-gradient(135deg, #FF9800, #FF6F00);
+            color: white;
+            padding: 15px 40px;
+            font-size: 18px;
+        }
+
+        .btn-restart:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 152, 0, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .quiz-content {
+                padding: 20px;
+            }
+
+            .question-text {
+                font-size: 16px;
+            }
+
+            .buttons {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 AWS Developer Associate (DVA-C02)</h1>
+            <p>Amazon S3 - Select, Presigned URLs, Batch Operations, Versioning, Lifecycle</p>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressBar"></div>
+        </div>
+
+        <div class="quiz-content" id="quizContent">
+            <div class="question-header">
+                <div class="question-number" id="questionNumber">Question 1/20</div>
+                <div class="score-display" id="scoreDisplay">Score: 0/0</div>
+            </div>
+
+            <div class="question-text" id="questionText"></div>
+
+            <div class="options" id="optionsContainer"></div>
+
+            <div class="explanation" id="explanation"></div>
+
+            <div class="buttons">
+                <button class="btn-prev" id="btnPrev" onclick="previousQuestion()">← Previous</button>
+                <button class="btn-check" id="btnCheck" onclick="checkAnswer()">Check Answer</button>
+                <button class="btn-next" id="btnNext" onclick="nextQuestion()">Next →</button>
+            </div>
+        </div>
+
+        <div class="result-screen" id="resultScreen">
+            <div class="result-icon" id="resultIcon">🎉</div>
+            <div class="result-score" id="resultScore">0/20</div>
+            <div class="result-message" id="resultMessage">Excellent!</div>
+            <div class="result-details">
+                <div>
+                    <span>✅ Correct Answers:</span>
+                    <strong id="correctCount">0</strong>
+                </div>
+                <div>
+                    <span>❌ Incorrect Answers:</span>
+                    <strong id="incorrectCount">0</strong>
+                </div>
+                <div>
+                    <span>📊 Accuracy:</span>
+                    <strong id="percentage">0%</strong>
+                </div>
+            </div>
+            <button class="btn-restart" onclick="restartQuiz()">🔄 Restart Quiz</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "A web application needs to allow authenticated users to upload images directly to an S3 bucket without sharing AWS credentials. Which solution meets this requirement?",
+                options: [
+                    "Create an IAM user for each user and grant PutObject permission",
+                    "Use S3 GeneratePresignedUrl API to create time-limited URLs",
+                    "Enable S3 public access and use bucket policy",
+                    "Configure CORS and allow anonymous upload"
+                ],
+                correct: 1,
+                explanation: "Presigned URLs allow temporary access to S3 objects without sharing credentials. These URLs have an expiration time and are created using the creator's credentials."
+            },
+            {
+                question: "A company has enabled S3 Versioning for a bucket containing documents. Storage costs are increasing rapidly due to too many versions. The company wants to keep the current version and 1 previous version. Which solution has the LOWEST operational cost?",
+                options: [
+                    "Write a Lambda function to delete old versions daily",
+                    "Configure S3 Lifecycle rule to keep 1 newer noncurrent version",
+                    "Use S3 Batch Operations to delete old versions weekly",
+                    "Disable versioning and re-enable it to reset versions"
+                ],
+                correct: 1,
+                explanation: "S3 Lifecycle rules can automatically manage noncurrent versions with 'NoncurrentVersionExpiration' and 'NewerNoncurrentVersions' configuration, reducing operational costs compared to Lambda or Batch Operations."
+            },
+            {
+                question: "A developer needs to query data from a 10GB CSV file in S3 to extract 100KB of data. Which method is MOST cost-effective and performant?",
+                options: [
+                    "Download the entire file and filter locally",
+                    "Use S3 Select with SQL query",
+                    "Import into DynamoDB then query",
+                    "Use Athena to query"
+                ],
+                correct: 1,
+                explanation: "S3 Select allows querying data directly in S3 using SQL, returning only the needed data. Reduces data transfer costs by 80% and increases performance by 400% compared to downloading the entire file."
+            },
+            {
+                question: "A company needs to store application logs for 90 days with frequent access, then keep them for 5 years for audit purposes with rare access. Which S3 Lifecycle configuration is MOST optimal?",
+                options: [
+                    "Transition to S3 Standard-IA after 90 days, then Glacier Deep Archive after 1 year",
+                    "Transition to S3 One Zone-IA after 30 days, then Glacier after 90 days",
+                    "Transition to S3 Intelligent-Tiering immediately",
+                    "Keep in S3 Standard and use S3 Select when needed"
+                ],
+                correct: 0,
+                explanation: "Standard-IA is suitable for infrequently accessed data after 90 days (minimum 30 days), Glacier Deep Archive is the cheapest option for archival storage with 12-hour retrieval time."
+            },
+            {
+                question: "An application creates presigned URLs to allow file downloads for 24 hours. Users report URLs expiring after 6 hours. What could be the cause?",
+                options: [
+                    "S3 bucket has encryption enabled",
+                    "IAM role used to create presigned URL and session token expires after 6 hours",
+                    "CloudFront is not caching URLs properly",
+                    "S3 bucket policy limits access time"
+                ],
+                correct: 1,
+                explanation: "When using temporary credentials (IAM role), presigned URLs have a maximum expiration time equal to the session token duration (default 6 hours). Use IAM user credentials for longer-term presigned URLs."
+            },
+            {
+                question: "A company needs to change the storage class of 100 million objects in an S3 bucket. Which solution is MOST efficient?",
+                options: [
+                    "Write a script with AWS SDK to copy objects to new storage class",
+                    "Use S3 Batch Operations with S3 Inventory",
+                    "Configure S3 Lifecycle rule",
+                    "Use AWS DataSync"
+                ],
+                correct: 1,
+                explanation: "S3 Batch Operations is designed to perform operations on billions of objects with tracking, retries, and notifications. S3 Inventory provides the object list for Batch Operations to process."
+            },
+            {
+                question: "When deleting an object in an S3 bucket with versioning enabled, what happens?",
+                options: [
+                    "Object is permanently deleted along with all versions",
+                    "S3 creates a delete marker and keeps all versions",
+                    "Only current version is deleted, previous versions are kept",
+                    "Object is moved to Recycle Bin for 30 days"
+                ],
+                correct: 1,
+                explanation: "S3 Versioning doesn't delete objects but creates a delete marker. All versions remain and can be restored by removing the delete marker."
+            },
+            {
+                question: "Which file formats does S3 Select support for direct querying?",
+                options: [
+                    "CSV, JSON, XML",
+                    "CSV, JSON, Parquet",
+                    "JSON, Parquet, Avro",
+                    "CSV, JSON, Parquet, ORC"
+                ],
+                correct: 1,
+                explanation: "S3 Select supports CSV, JSON, and Parquet. You can use SQL-like queries to filter and retrieve data from these formats."
+            },
+            {
+                question: "What will this S3 Lifecycle configuration do?\n{\n  \"NoncurrentVersionExpiration\": {\n    \"NoncurrentDays\": 30,\n    \"NewerNoncurrentVersions\": 2\n  }\n}",
+                options: [
+                    "Delete all versions after 30 days",
+                    "Keep 2 newest versions, delete older versions after 30 days",
+                    "Delete current version after 30 days",
+                    "Transition 2 versions to Glacier after 30 days"
+                ],
+                correct: 1,
+                explanation: "This configuration keeps 2 newer noncurrent versions, and deletes other noncurrent versions after 30 days from when they became noncurrent."
+            },
+            {
+                question: "Which statement is TRUE about S3 Presigned URLs?",
+                options: [
+                    "URLs can be used by anyone with the link, no authentication required",
+                    "URLs inherit permissions of the IAM principal that created them at usage time",
+                    "URLs only work with public S3 buckets",
+                    "URLs require MFA to access"
+                ],
+                correct: 0,
+                explanation: "Presigned URLs allow anonymous access while the URL is valid. Anyone with the URL can access the object. Permissions are checked at URL creation time, not at usage time."
+            },
+            {
+                question: "What do you need to run S3 Batch Operations?",
+                options: [
+                    "Only S3 bucket name",
+                    "Manifest file (can be from S3 Inventory or CSV)",
+                    "Lambda function to process each object",
+                    "CloudFormation template"
+                ],
+                correct: 1,
+                explanation: "S3 Batch Operations requires a manifest file containing the list of objects to process. This can be created from S3 Inventory report or custom CSV file."
+            },
+            {
+                question: "When should you use S3 Select instead of Athena?",
+                options: [
+                    "When you need to query multiple files and join data",
+                    "When you need simple filtering on a single object",
+                    "When you need to create complex analytics reports",
+                    "When you need to query historical data across partitions"
+                ],
+                correct: 1,
+                explanation: "S3 Select is suitable for simple queries on single objects. Athena is suitable for complex queries, joins, and queries across multiple files with Glue Data Catalog."
+            },
+            {
+                question: "What does MFA Delete in S3 Versioning protect against?",
+                options: [
+                    "Unauthorized object uploads",
+                    "Accidental deletion of object versions and disabling versioning",
+                    "Unauthorized reads of objects",
+                    "Bucket policy changes"
+                ],
+                correct: 1,
+                explanation: "MFA Delete requires MFA to permanently delete object versions or suspend versioning, protecting against accidental or malicious deletions."
+            },
+            {
+                question: "Objects are transitioned to S3 Glacier Flexible Retrieval. To access them, what needs to be done?",
+                options: [
+                    "Transition back to S3 Standard using Lifecycle rule",
+                    "Initiate restore request and wait 1-5 minutes",
+                    "Initiate restore request and wait 1-5 minutes (Expedited), 3-5 hours (Standard), or 5-12 hours (Bulk)",
+                    "Download directly like S3 Standard"
+                ],
+                correct: 2,
+                explanation: "Glacier Flexible Retrieval requires a restore request with 3 options: Expedited (1-5 minutes, most expensive), Standard (3-5 hours), Bulk (5-12 hours, cheapest)."
+            },
+            {
+                question: "Which operations can presigned URLs be used for?",
+                options: [
+                    "Only GET (download)",
+                    "GET and PUT",
+                    "GET, PUT, DELETE and HEAD",
+                    "All S3 operations"
+                ],
+                correct: 2,
+                explanation: "You can create presigned URLs for most S3 operations including GET, PUT, DELETE, HEAD. The operation is specified when creating the URL."
+            },
+            {
+                question: "Can S3 Batch Operations invoke Lambda functions?",
+                options: [
+                    "No, only supports built-in operations",
+                    "Yes, can invoke Lambda functions to process custom logic for each object",
+                    "Only possible with Step Functions",
+                    "Only possible with EventBridge"
+                ],
+                correct: 1,
+                explanation: "S3 Batch Operations supports invoking Lambda functions to perform custom operations on objects, allowing flexible processing logic."
+            },
+            {
+                question: "S3 Lifecycle transition to S3 Standard-IA requires objects to be in S3 Standard for minimum how long?",
+                options: [
+                    "0 days (immediately)",
+                    "7 days",
+                    "30 days",
+                    "90 days"
+                ],
+                correct: 2,
+                explanation: "Objects must be in S3 Standard for at least 30 days before transitioning to Standard-IA or One Zone-IA. S3 doesn't allow earlier transitions."
+            },
+            {
+                question: "How much can S3 Select improve performance compared to retrieving the entire object?",
+                options: [
+                    "2x faster",
+                    "4x faster",
+                    "10x faster",
+                    "Up to 400% faster and reduce 80% data transfer"
+                ],
+                correct: 3,
+                explanation: "S3 Select can improve performance up to 400% and reduce data transfer costs by 80% because it only returns filtered data, not the entire object."
+            },
+            {
+                question: "A bucket has versioning enabled with a 1GB object updated 10 times. How many GB of storage cost is calculated?",
+                options: [
+                    "1 GB (only current version)",
+                    "2 GB (current + previous)",
+                    "10 GB (all versions)",
+                    "11 GB (all versions)"
+                ],
+                correct: 3,
+                explanation: "With versioning enabled, each version is stored as a separate object. 1 original + 10 updates = 11 versions × 1GB = 11GB storage."
+            },
+            {
+                question: "What information does S3 Batch Operations completion report provide?",
+                options: [
+                    "Only the number of processed objects",
+                    "List of failed objects and reasons, count of succeeded/failed",
+                    "Only total cost of operation",
+                    "No completion report"
+                ],
+                correct: 1,
+                explanation: "S3 Batch Operations creates a detailed completion report including: list of succeeded/failed objects, error codes, error messages, and summary statistics. The report is stored in an S3 bucket."
+            }
+        ];
+
+        let currentQuestion = 0;
+        let userAnswers = {};
+        let score = 0;
+        let answered = 0;
+
+        function loadQuestion() {
+            const q = questions[currentQuestion];
+            document.getElementById('questionNumber').textContent = `Question ${currentQuestion + 1}/20`;
+            document.getElementById('questionText').textContent = q.question;
+            document.getElementById('scoreDisplay').textContent = `Score: ${score}/${answered}`;
+            
+            const container = document.getElementById('optionsContainer');
+            container.innerHTML = '';
+            
+            q.options.forEach((option, index) => {
+                const div = document.createElement('div');
+                div.className = 'option';
+                div.innerHTML = `
+                    <input type="radio" name="answer" value="${index}" id="opt${index}">
+                    <label for="opt${index}" style="cursor: pointer; flex: 1;">${String.fromCharCode(65 + index)}. ${option}</label>
+                `;
+                div.onclick = () => selectOption(index);
+                container.appendChild(div);
+            });
+
+            if (userAnswers[currentQuestion] !== undefined) {
+                selectOption(userAnswers[currentQuestion]);
+                showAnswer();
+            }
+
+            document.getElementById('explanation').classList.remove('show');
+            document.getElementById('btnPrev').disabled = currentQuestion === 0;
+            document.getElementById('btnCheck').disabled = userAnswers[currentQuestion] !== undefined;
+            
+            updateProgress();
+        }
+
+        function selectOption(index) {
+            document.querySelectorAll('.option').forEach(opt => opt.classList.remove('selected'));
+            document.querySelectorAll('.option')[index].classList.add('selected');
+            document.querySelectorAll('input[name="answer"]')[index].checked = true;
+        }
+
+        function checkAnswer() {
+            const selected = document.querySelector('input[name="answer"]:checked');
+            if (!selected) {
+                alert('Please select an answer!');
+                return;
+            }
+
+            const answer = parseInt(selected.value);
+            userAnswers[currentQuestion] = answer;
+            
+            if (answer === questions[currentQuestion].correct) {
+                score++;
+            }
+            answered++;
+
+            showAnswer();
+            document.getElementById('btnCheck').disabled = true;
+        }
+
+        function showAnswer() {
+            const q = questions[currentQuestion];
+            const options = document.querySelectorAll('.option');
+            
+            options.forEach(opt => opt.classList.add('disabled'));
+            options[q.correct].classList.add('correct');
+            
+            if (userAnswers[currentQuestion] !== q.correct) {
+                options[userAnswers[currentQuestion]].classList.add('incorrect');
+            }
+
+            const explanation = document.getElementById('explanation');
+            explanation.innerHTML = `<strong>Explanation:</strong> ${q.explanation}`;
+            explanation.classList.add('show');
+
+            document.getElementById('scoreDisplay').textContent = `Score: ${score}/${answered}`;
+        }
+
+        function nextQuestion() {
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function previousQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                loadQuestion();
+            }
+        }
+
+        function updateProgress() {
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        function showResults() {
+            document.getElementById('quizContent').style.display = 'none';
+            document.getElementById('resultScreen').classList.add('show');
+            
+            const percentage = Math.round((score / questions.length) * 100);
+            
+            document.getElementById('resultScore').textContent = `${score}/${questions.length}`;
+            document.getElementById('correctCount').textContent = score;
+            document.getElementById('incorrectCount').textContent = questions.length - score;
+            document.getElementById('percentage').textContent = percentage + '%';
+            
+            let message = '';
+            let icon = '';
+            
+            if (percentage >= 90) {
+                message = 'Excellent! You have mastered the knowledge!';
+                icon = '🎉';
+            } else if (percentage >= 70) {
+                message = 'Well done! Keep up the good work!';
+                icon = '👏';
+            } else if (percentage >= 50) {
+                message = 'Good effort! Review and try again!';
+                icon = '👍';
+            } else {
+                message = 'Keep studying! You can do better!';
+                icon = '📚';
+            }
+            
+            document.getElementById('resultMessage').textContent = message;
+            document.getElementById('resultIcon').textContent = icon;
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            userAnswers = {};
+            score = 0;
+            answered = 0;
+            
+            document.getElementById('resultScreen').classList.remove('show');
+            document.getElementById('quizContent').style.display = 'block';
+            
+            loadQuestion();
+        }
+
+        // Initialize quiz
+        loadQuestion();
+    </script>
+</body>
+</html>

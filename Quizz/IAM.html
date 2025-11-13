@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS DVA-C02 IAM Practice Quiz</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            color: #667eea;
+            font-size: 1.3em;
+            margin-bottom: 30px;
+        }
+
+        .question-block {
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .question-block:last-child {
+            border-bottom: none;
+        }
+
+        .question-header {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .question-number {
+            width: 40px;
+            height: 40px;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .question-text {
+            flex: 1;
+            color: #333;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        .multiple-choice-hint {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .options {
+            margin-left: 55px;
+        }
+
+        .option {
+            margin-bottom: 12px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .option:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .option.selected {
+            border-color: #667eea;
+            background: #e8ebff;
+        }
+
+        .option.correct {
+            border-color: #10b981;
+            background: #d1fae5;
+        }
+
+        .option.incorrect {
+            border-color: #ef4444;
+            background: #fee2e2;
+        }
+
+        .option-checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #999;
+            border-radius: 50%;
+            flex-shrink: 0;
+            position: relative;
+            margin-top: 2px;
+        }
+
+        .option.selected .option-checkbox {
+            border-color: #667eea;
+            background: #667eea;
+        }
+
+        .option.selected .option-checkbox::after {
+            content: '✓';
+            color: white;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: bold;
+        }
+
+        .option.correct .option-checkbox {
+            border-color: #10b981;
+            background: #10b981;
+        }
+
+        .option.incorrect .option-checkbox {
+            border-color: #ef4444;
+            background: #ef4444;
+        }
+
+        .option-label {
+            font-weight: bold;
+            color: #666;
+            margin-right: 8px;
+        }
+
+        .option-text {
+            flex: 1;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        .explanation {
+            margin-left: 55px;
+            margin-top: 15px;
+            padding: 15px;
+            background: #e8f4fd;
+            border-left: 4px solid #3b82f6;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .explanation.show {
+            display: block;
+        }
+
+        .explanation-toggle {
+            margin-left: 55px;
+            margin-top: 10px;
+            background: none;
+            border: none;
+            color: #667eea;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.95em;
+        }
+
+        .explanation-toggle:hover {
+            color: #5568d3;
+            text-decoration: underline;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 30px;
+        }
+
+        .submit-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .result-box.show {
+            display: block;
+        }
+
+        .result-score {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .result-message {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+
+        .retry-btn {
+            background: white;
+            color: #667eea;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        .retry-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .disabled {
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AWS Certified Developer Associate (DVA-C02)</h1>
+        <h2>IAM Practice Quiz - 10 Questions</h2>
+
+        <div id="resultBox" class="result-box">
+            <div class="result-score" id="resultScore"></div>
+            <div class="result-message" id="resultMessage"></div>
+            <button class="retry-btn" onclick="retryQuiz()">🔄 Retake Quiz</button>
+        </div>
+
+        <div id="quizContainer"></div>
+
+        <button id="submitBtn" class="submit-btn" onclick="submitQuiz()">
+            Answer All Questions (0/10)
+        </button>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                id: 1,
+                question: "A developer needs to grant temporary access to an S3 bucket for an application running on an EC2 instance. The access should follow the principle of least privilege and not require storing credentials in the application code. Which solution meets these requirements?",
+                options: [
+                    "Create an IAM user with programmatic access and store the credentials in the EC2 instance user data",
+                    "Create an IAM role with the necessary S3 permissions and attach it to the EC2 instance",
+                    "Use the root account credentials and store them in an encrypted configuration file",
+                    "Create an IAM group with S3 permissions and add the EC2 instance to the group"
+                ],
+                correct: [1],
+                explanation: "IAM roles provide temporary credentials and follow best security practices. They don't require storing credentials in code."
+            },
+            {
+                id: 2,
+                question: "A company has multiple developers who need different levels of access to AWS resources. The security team wants to implement a solution that grants permissions based on job function. What is the MOST efficient way to manage these permissions?",
+                options: [
+                    "Create individual IAM policies for each developer",
+                    "Use IAM groups to assign permissions based on job roles",
+                    "Grant all developers administrator access and rely on manual oversight",
+                    "Create a single IAM policy with all possible permissions and attach it to all users"
+                ],
+                correct: [1],
+                explanation: "IAM groups allow efficient permission management by grouping users with similar access needs together."
+            },
+            {
+                id: 3,
+                question: "An application needs to access DynamoDB tables. The developer wants to ensure that the application can only perform read operations and cannot modify or delete data. Which IAM policy action should be included?",
+                options: [
+                    "dynamodb:*",
+                    "dynamodb:GetItem and dynamodb:Scan",
+                    "dynamodb:PutItem",
+                    "dynamodb:DeleteItem"
+                ],
+                correct: [1],
+                explanation: "GetItem and Scan are read-only operations. Using these specific actions follows the principle of least privilege."
+            },
+            {
+                id: 4,
+                question: "A developer is configuring cross-account access to allow an application in Account A to access an S3 bucket in Account B. What is required to enable this access?",
+                options: [
+                    "Create an IAM role in Account B with permissions to access the S3 bucket",
+                    "Configure the trust policy in Account B to allow Account A to assume the role",
+                    "Create an IAM user in Account B and share the credentials with Account A",
+                    "Enable cross-region replication on the S3 bucket",
+                    "Configure bucket policies in Account A"
+                ],
+                correct: [0, 1],
+                multiple: true,
+                explanation: "Cross-account access requires creating a role in the target account (B) and configuring its trust policy to allow the source account (A) to assume it."
+            },
+            {
+                id: 5,
+                question: "A Lambda function needs to read objects from an S3 bucket and write logs to CloudWatch. The function is failing with an 'Access Denied' error. What is the MOST likely cause?",
+                options: [
+                    "The Lambda function's execution role does not have the necessary IAM permissions",
+                    "The Lambda function timeout is too short",
+                    "The S3 bucket is in a different region",
+                    "CloudWatch Logs is not enabled for the region"
+                ],
+                correct: [0],
+                explanation: "Access Denied errors typically indicate missing IAM permissions in the Lambda execution role."
+            },
+            {
+                id: 6,
+                question: "A developer needs to allow an external third-party application to access AWS resources for a limited time without sharing long-term credentials. Which IAM feature should be used?",
+                options: [
+                    "IAM users with password policies",
+                    "IAM roles with temporary security credentials",
+                    "Root account access",
+                    "IAM groups with time-based policies"
+                ],
+                correct: [1],
+                explanation: "IAM roles provide temporary security credentials through STS, perfect for third-party access without sharing long-term credentials."
+            },
+            {
+                id: 7,
+                question: "An application uses an IAM policy to grant access to multiple S3 buckets. The developer wants to restrict access to only buckets that start with 'dev-'. Which policy element should be used?",
+                options: [
+                    "Principal",
+                    "Effect",
+                    "Condition",
+                    "Resource with wildcard notation"
+                ],
+                correct: [3],
+                explanation: "The Resource element with wildcard notation (e.g., 'arn:aws:s3:::dev-*') allows specifying bucket name patterns."
+            },
+            {
+                id: 8,
+                question: "A company requires that all API calls made to AWS services be logged for auditing purposes. Which AWS service should be enabled to meet this requirement?",
+                options: [
+                    "Amazon CloudWatch Logs",
+                    "AWS CloudTrail",
+                    "AWS Config",
+                    "Amazon Inspector"
+                ],
+                correct: [1],
+                explanation: "AWS CloudTrail records all API calls made in your AWS account, providing a complete audit trail."
+            },
+            {
+                id: 9,
+                question: "A developer has created an IAM policy but the application is still unable to access the required resources. The policy is attached to the IAM role used by the application. What should the developer check to troubleshoot this issue?",
+                options: [
+                    "Verify that the IAM role's trust policy allows the application to assume the role",
+                    "Check if there are any explicit deny statements in other attached policies",
+                    "Confirm that the application is running in the correct AWS region",
+                    "Ensure the application has internet connectivity",
+                    "Verify the application's memory allocation"
+                ],
+                correct: [0, 1],
+                multiple: true,
+                explanation: "Trust policies control who can assume a role, and explicit deny statements always override allow statements in IAM policy evaluation."
+            },
+            {
+                id: 10,
+                question: "A developer needs to grant a mobile application access to AWS resources. The application should authenticate users through a social identity provider (Google, Facebook) and provide temporary AWS credentials. Which service should be used?",
+                options: [
+                    "AWS IAM Users",
+                    "Amazon Cognito Identity Pools",
+                    "AWS STS GetSessionToken",
+                    "AWS IAM Groups"
+                ],
+                correct: [1],
+                explanation: "Amazon Cognito Identity Pools enable federated authentication with social providers and provide temporary AWS credentials."
+            }
+        ];
+
+        let userAnswers = {};
+        let quizSubmitted = false;
+
+        function initQuiz() {
+            const container = document.getElementById('quizContainer');
+            container.innerHTML = '';
+
+            questions.forEach((q, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question-block';
+                questionDiv.id = `question-${q.id}`;
+
+                let questionHTML = `
+                    <div class="question-header">
+                        <div class="question-number">${index + 1}</div>
+                        <div class="question-text">
+                            ${q.question}
+                            ${q.multiple ? '<span class="multiple-choice-hint"> (Choose TWO)</span>' : ''}
+                        </div>
+                    </div>
+                    <div class="options">
+                `;
+
+                q.options.forEach((option, optIndex) => {
+                    questionHTML += `
+                        <div class="option" onclick="selectOption(${q.id}, ${optIndex}, ${q.multiple || false})">
+                            <div class="option-checkbox"></div>
+                            <div class="option-text">
+                                <span class="option-label">${String.fromCharCode(65 + optIndex)}.</span>
+                                ${option}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                questionHTML += `
+                    </div>
+                    <button class="explanation-toggle" onclick="toggleExplanation(${q.id})" style="display: none;">
+                        + Show Explanation
+                    </button>
+                    <div class="explanation" id="explanation-${q.id}">
+                        ${q.explanation}
+                    </div>
+                `;
+
+                questionDiv.innerHTML = questionHTML;
+                container.appendChild(questionDiv);
+            });
+        }
+
+        function selectOption(questionId, optionIndex, isMultiple) {
+            if (quizSubmitted) return;
+
+            const question = questions.find(q => q.id === questionId);
+            const questionDiv = document.getElementById(`question-${questionId}`);
+            const options = questionDiv.querySelectorAll('.option');
+
+            if (isMultiple) {
+                if (!userAnswers[questionId]) {
+                    userAnswers[questionId] = [];
+                }
+
+                const answerIndex = userAnswers[questionId].indexOf(optionIndex);
+                if (answerIndex > -1) {
+                    userAnswers[questionId].splice(answerIndex, 1);
+                    options[optionIndex].classList.remove('selected');
+                } else {
+                    if (userAnswers[questionId].length < 2) {
+                        userAnswers[questionId].push(optionIndex);
+                        options[optionIndex].classList.add('selected');
+                    }
+                }
+            } else {
+                userAnswers[questionId] = [optionIndex];
+                options.forEach(opt => opt.classList.remove('selected'));
+                options[optionIndex].classList.add('selected');
+            }
+
+            updateSubmitButton();
+        }
+
+        function updateSubmitButton() {
+            const submitBtn = document.getElementById('submitBtn');
+            const answeredCount = Object.keys(userAnswers).length;
+            
+            submitBtn.textContent = answeredCount < questions.length 
+                ? `Answer All Questions (${answeredCount}/${questions.length})`
+                : 'Submit Quiz';
+            
+            submitBtn.disabled = answeredCount < questions.length;
+        }
+
+        function submitQuiz() {
+            quizSubmitted = true;
+            let score = 0;
+
+            questions.forEach(q => {
+                const questionDiv = document.getElementById(`question-${q.id}`);
+                const options = questionDiv.querySelectorAll('.option');
+                const userAnswer = userAnswers[q.id] || [];
+
+                let isCorrect = false;
+                if (q.multiple) {
+                    isCorrect = q.correct.length === userAnswer.length && 
+                               q.correct.every(c => userAnswer.includes(c));
+                } else {
+                    isCorrect = userAnswer.length > 0 && userAnswer[0] === q.correct[0];
+                }
+
+                if (isCorrect) score++;
+
+                options.forEach((opt, idx) => {
+                    if (q.correct.includes(idx)) {
+                        opt.classList.add('correct');
+                    } else if (userAnswer.includes(idx)) {
+                        opt.classList.add('incorrect');
+                    }
+                });
+
+                questionDiv.querySelector('.explanation-toggle').style.display = 'inline-block';
+            });
+
+            document.getElementById('quizContainer').classList.add('disabled');
+            document.getElementById('submitBtn').style.display = 'none';
+
+            const resultBox = document.getElementById('resultBox');
+            const resultScore = document.getElementById('resultScore');
+            const resultMessage = document.getElementById('resultMessage');
+
+            resultScore.textContent = `Your Score: ${score}/10`;
+            
+            if (score >= 9) {
+                resultMessage.textContent = 'Excellent! You have strong IAM knowledge 🎉';
+            } else if (score >= 7) {
+                resultMessage.textContent = 'Good! Review the topics you missed 👍';
+            } else if (score >= 5) {
+                resultMessage.textContent = 'Fair. More study needed on IAM concepts 📚';
+            } else {
+                resultMessage.textContent = 'Keep studying! Focus on IAM fundamentals 💪';
+            }
+
+            resultBox.classList.add('show');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleExplanation(questionId) {
+            const explanation = document.getElementById(`explanation-${questionId}`);
+            const button = event.target;
+            
+            if (explanation.classList.contains('show')) {
+                explanation.classList.remove('show');
+                button.textContent = '+ Show Explanation';
+            } else {
+                explanation.classList.add('show');
+                button.textContent = '− Hide Explanation';
+            }
+        }
+
+        function retryQuiz() {
+            userAnswers = {};
+            quizSubmitted = false;
+            
+            document.getElementById('resultBox').classList.remove('show');
+            document.getElementById('quizContainer').classList.remove('disabled');
+            document.getElementById('submitBtn').style.display = 'block';
+            
+            initQuiz();
+            updateSubmitButton();
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        initQuiz();
+    </script>
+</body>
+</html>

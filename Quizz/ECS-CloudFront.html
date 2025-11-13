@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS Quiz</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .question-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .question-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .question-number {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .question-text {
+            font-size: 1.1em;
+            color: #333;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .options {
+            margin-bottom: 20px;
+        }
+
+        .option {
+            display: block;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f9f9f9;
+        }
+
+        .option:hover {
+            border-color: #667eea;
+            background: #f0f0ff;
+        }
+
+        .option input[type="radio"] {
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .option label {
+            cursor: pointer;
+            display: inline;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .result.correct {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+            display: block;
+        }
+
+        .result.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+            display: block;
+        }
+
+        .correct-answer {
+            margin-top: 10px;
+            color: #155724;
+            font-weight: normal;
+        }
+
+        .score-summary {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            margin-top: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .score-summary h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .score-number {
+            font-size: 3em;
+            color: #764ba2;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .question-card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 AWS Quiz Application</h1>
+
+        <div id="quiz-container"></div>
+
+        <div class="score-summary" id="score-summary" style="display: none;">
+            <h2>Kết quả tổng hợp</h2>
+            <div class="score-number" id="final-score"></div>
+            <p style="margin-top: 10px; color: #666;">Bạn đã hoàn thành bài quiz!</p>
+        </div>
+    </div>
+
+    <script>
+        const quizData = [
+            {
+                id: 1,
+                question: "Your company has embraced cloud-native microservices architectures. New applications must be dockerized and stored in a registry service offered by AWS. The architecture should support dynamic port mapping and support multiple tasks from a single service on the same container instance. All services should run on the same EC2 instance. Which of the following options offers the best-fit solution for the given use-case?",
+                options: [
+                    "A. Classic Load Balancer + Beanstalk",
+                    "B. Application Load Balancer + Beanstalk",
+                    "C. Application Load Balancer + ECS",
+                    "D. Classic Load Balancer + ECS"
+                ],
+                correct: 2
+            },
+            {
+                id: 2,
+                question: "Your company is planning to move away from reserving EC2 instances and would like to adopt a more agile form of serverless architecture. Which of the following is the simplest and the least effort way of deploying the Docker containers on this serverless architecture?",
+                options: [
+                    "A. Amazon Elastic Container Service (Amazon ECS) on Fargate",
+                    "B. Amazon Elastic Container Service (Amazon ECS) on EC2",
+                    "C. AWS Elastic Beanstalk",
+                    "D. Amazon Elastic Kubernetes Service (Amazon EKS) on Fargate"
+                ],
+                correct: 0
+            },
+            {
+                id: 3,
+                question: "Your company is shifting towards Elastic Container Service (ECS) to deploy applications. The process should be automated using the AWS CLI to create a service where at least ten instances of a task definition are kept running under the default cluster. Which of the following commands should be executed?",
+                options: [
+                    "A. aws ecr create-service --service-name ecs-simple-service --task-definition ecs-demo --desired-count 10",
+                    "B. aws ecs run-task --cluster default --task-definition ecs-demo",
+                    "C. aws ecs create-service --service-name ecs-simple-service --task-definition ecs-demo --desired-count 10",
+                    "D. docker-compose create ecs-simple-service"
+                ],
+                correct: 2
+            },
+            {
+                id: 4,
+                question: "ECS Fargate container tasks are usually spread across Availability Zones (AZs) and the underlying workloads need persistent cross-AZ shared access to the data volumes configured for the container tasks. Which of the following solutions is the best choice for these workloads?",
+                options: [
+                    "A. Bind mounts",
+                    "B. Docker volumes",
+                    "C. AWS Gateway Storage volumes",
+                    "D. Amazon EFS volumes"
+                ],
+                correct: 3
+            },
+            {
+                id: 5,
+                question: "The development team at an e-commerce company wants to run a serverless data store service on two docker containers that share resources. Which of the following ECS configurations can be used to facilitate this use-case?",
+                options: [
+                    "A. Put the two containers into two separate task definitions using a Fargate Launch Type.",
+                    "B. Put the two containers into two separate task definitions using an EC2 Launch Type.",
+                    "C. Put the two containers into a single task definition using a Fargate Launch Type.",
+                    "D. Put the two containers into a single task definition using an EC2 Launch Type."
+                ],
+                correct: 2
+            },
+            {
+                id: 6,
+                question: "A business hosts its website on Amazon EC2 instances and employs Auto Scaling to adjust its resources according to traffic spikes. However, users globally report slow loading times because static content hosted on the EC2 instances takes too long to load, even outside of busy periods. What pair of actions should be taken to improve the latency of the website? (Select two)",
+                options: [
+                    "A. Migrate the application to AWS Lambda",
+                    "B. Upgrade the CPU and RAM available to the EC2 instances",
+                    "C. Transfer the application's static content hosted on EC2 instances to Amazon S3",
+                    "D. Double the Auto Scaling group's desired capacity",
+                    "E. Set up an Amazon CloudFront distribution to cache the static content with Amazon S3 configured as the origin"
+                ],
+                correct: [2, 4]
+            },
+            {
+                id: 7,
+                question: "Your company hosts a static website on Amazon Simple Storage Service (S3) written in HTML5. The website targets aviation enthusiasts and it has grown a worldwide audience with hundreds of thousands of visitors accessing the website now on a monthly basis. While users in the United States have a great user experience, users from other parts of the world are experiencing slow responses and lag. Which service can mitigate this issue?",
+                options: [
+                    "A. Use Amazon ElastiCache for Redis",
+                    "B. Use Amazon S3 Caching",
+                    "C. Use Amazon S3 Transfer Acceleration",
+                    "D. Use Amazon CloudFront"
+                ],
+                correct: 3
+            }
+        ];
+
+        let userAnswers = {};
+        let totalScore = 0;
+
+        function createQuiz() {
+            const container = document.getElementById('quiz-container');
+            
+            quizData.forEach((q, index) => {
+                const card = document.createElement('div');
+                card.className = 'question-card';
+                card.id = `question-${q.id}`;
+                
+                const isMultipleChoice = Array.isArray(q.correct);
+                const inputType = isMultipleChoice ? 'checkbox' : 'radio';
+                
+                let optionsHtml = '';
+                q.options.forEach((option, i) => {
+                    optionsHtml += `
+                        <div class="option">
+                            <input type="${inputType}" id="q${q.id}_opt${i}" name="q${q.id}" value="${i}">
+                            <label for="q${q.id}_opt${i}">${option}</label>
+                        </div>
+                    `;
+                });
+                
+                card.innerHTML = `
+                    <span class="question-number">Câu ${q.id}</span>
+                    <div class="question-text">${q.question}</div>
+                    ${isMultipleChoice ? '<p style="color: #667eea; font-weight: bold; margin-bottom: 10px;">⚠️ Chọn 2 đáp án</p>' : ''}
+                    <div class="options">
+                        ${optionsHtml}
+                    </div>
+                    <button class="submit-btn" onclick="checkAnswer(${q.id})">Submit</button>
+                    <div class="result" id="result-${q.id}"></div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+
+        function checkAnswer(questionId) {
+            const question = quizData.find(q => q.id === questionId);
+            const isMultipleChoice = Array.isArray(question.correct);
+            
+            let selectedAnswers = [];
+            
+            if (isMultipleChoice) {
+                const checkboxes = document.querySelectorAll(`input[name="q${questionId}"]:checked`);
+                selectedAnswers = Array.from(checkboxes).map(cb => parseInt(cb.value));
+            } else {
+                const selected = document.querySelector(`input[name="q${questionId}"]:checked`);
+                if (!selected) {
+                    alert('Vui lòng chọn một đáp án!');
+                    return;
+                }
+                selectedAnswers = [parseInt(selected.value)];
+            }
+            
+            if (selectedAnswers.length === 0) {
+                alert('Vui lòng chọn đáp án!');
+                return;
+            }
+            
+            if (isMultipleChoice && selectedAnswers.length !== 2) {
+                alert('Vui lòng chọn đúng 2 đáp án!');
+                return;
+            }
+            
+            const resultDiv = document.getElementById(`result-${questionId}`);
+            let isCorrect;
+            
+            if (isMultipleChoice) {
+                selectedAnswers.sort();
+                const correctSorted = [...question.correct].sort();
+                isCorrect = JSON.stringify(selectedAnswers) === JSON.stringify(correctSorted);
+            } else {
+                isCorrect = selectedAnswers[0] === question.correct;
+            }
+            
+            if (isCorrect) {
+                resultDiv.className = 'result correct';
+                resultDiv.innerHTML = '✅ Chính xác! Câu trả lời đúng.';
+                if (!userAnswers[questionId]) {
+                    totalScore++;
+                }
+            } else {
+                resultDiv.className = 'result incorrect';
+                let correctAnswerText;
+                if (isMultipleChoice) {
+                    correctAnswerText = question.correct.map(i => question.options[i]).join(' và ');
+                } else {
+                    correctAnswerText = question.options[question.correct];
+                }
+                resultDiv.innerHTML = `❌ Sai rồi!<div class="correct-answer">Đáp án đúng: ${correctAnswerText}</div>`;
+            }
+            
+            userAnswers[questionId] = isCorrect;
+            
+            // Disable inputs after submit
+            const inputs = document.querySelectorAll(`input[name="q${questionId}"]`);
+            inputs.forEach(input => input.disabled = true);
+            
+            // Disable submit button
+            event.target.disabled = true;
+            
+            updateScore();
+        }
+
+        function updateScore() {
+            const answeredCount = Object.keys(userAnswers).length;
+            if (answeredCount === quizData.length) {
+                const scoreDiv = document.getElementById('score-summary');
+                const scoreNumber = document.getElementById('final-score');
+                scoreDiv.style.display = 'block';
+                scoreNumber.textContent = `${totalScore}/${quizData.length}`;
+                scoreDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        createQuiz();
+    </script>
+</body>
+</html>

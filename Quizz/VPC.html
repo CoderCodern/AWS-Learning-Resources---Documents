@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS DVA-C02 VPC Quiz</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #1e293b 0%, #7e22ce 50%, #1e293b 100%);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #9333ea 0%, #3b82f6 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: #e9d5ff;
+        }
+
+        .quiz-content {
+            padding: 1.5rem;
+        }
+
+        .question-block {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+        }
+
+        .question-block.submitted {
+            background: #f0fdf4;
+            border-color: #86efac;
+        }
+
+        .question-header {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .question-number {
+            flex-shrink: 0;
+            width: 2rem;
+            height: 2rem;
+            background: #9333ea;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .question-text {
+            flex: 1;
+            color: #1f2937;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+
+        .multiple-badge {
+            display: inline-block;
+            background: #dbeafe;
+            color: #1d4ed8;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-top: 0.5rem;
+        }
+
+        .options {
+            margin-left: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .option {
+            display: flex;
+            align-items: start;
+            gap: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            background: white;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .option:hover:not(.disabled) {
+            background: #f3f4f6;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .option.disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+
+        .option input {
+            margin-top: 0.25rem;
+            width: 1rem;
+            height: 1rem;
+            cursor: pointer;
+        }
+
+        .option.disabled input {
+            cursor: not-allowed;
+        }
+
+        .option-text {
+            flex: 1;
+            color: #1f2937;
+        }
+
+        .option.selected {
+            background: #f3e8ff;
+            border-color: #9333ea;
+        }
+
+        .option.correct {
+            background: #dcfce7;
+            border-color: #16a34a;
+        }
+
+        .option.incorrect {
+            background: #fee2e2;
+            border-color: #dc2626;
+        }
+
+        .option.correct .option-text {
+            color: #15803d;
+            font-weight: 600;
+        }
+
+        .option.incorrect .option-text {
+            color: #991b1b;
+        }
+
+        .check-icon, .x-icon {
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+
+        .check-icon {
+            color: #16a34a;
+        }
+
+        .x-icon {
+            color: #dc2626;
+        }
+
+        .submit-btn-container {
+            margin-left: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #9333ea 0%, #3b82f6 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(147, 51, 234, 0.3);
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(147, 51, 234, 0.4);
+        }
+
+        .submit-btn:disabled {
+            background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+            cursor: not-allowed;
+            box-shadow: none;
+            opacity: 0.6;
+        }
+
+        .result-section {
+            margin-left: 3rem;
+            display: none;
+        }
+
+        .result-section.show {
+            display: block;
+        }
+
+        .answer-box {
+            padding: 1.25rem;
+            background: linear-gradient(135deg, #dcfce7 0%, #d1fae5 100%);
+            border-left: 4px solid #16a34a;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .answer-box.incorrect-answer {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border-left-color: #dc2626;
+        }
+
+        .answer-title {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .answer-box .answer-title {
+            color: #15803d;
+        }
+
+        .answer-box.incorrect-answer .answer-title {
+            color: #991b1b;
+        }
+
+        .answer-value {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .answer-box .answer-value {
+            color: #166534;
+        }
+
+        .answer-box.incorrect-answer .answer-value {
+            color: #7f1d1d;
+        }
+
+        .explanation-box {
+            padding: 1.25rem;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-left: 4px solid #f59e0b;
+            border-radius: 8px;
+        }
+
+        .explanation-title {
+            font-weight: bold;
+            color: #92400e;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .explanation-text {
+            color: #78350f;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .footer {
+            margin-top: 1.5rem;
+            text-align: center;
+            color: white;
+            font-size: 0.875rem;
+        }
+
+        .footer p {
+            margin: 0.5rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>AWS Certified Developer Associate</h1>
+            <p>VPC Practice Quiz - 20 Questions</p>
+        </div>
+
+        <div class="quiz-content" id="quizContent"></div>
+    </div>
+
+    <div class="footer">
+        <p>Practice quiz for AWS Certified Developer Associate (DVA-C02)</p>
+        <p>Focus on VPC concepts and best practices</p>
+    </div>
+
+    <script>
+        const quizData = [
+            {
+                id: 1,
+                question: "A developer creates a VPC named VPC-A that has public and private subnets. The developer also creates an Amazon RDS database inside the private subnet of VPC-A. To perform some queries, the developer creates an AWS Lambda function in the default VPC. The Lambda function has code to access the RDS database. When the Lambda function runs, an error message indicates that the function cannot connect to the RDS database. How can the developer solve this problem?",
+                options: [
+                    "Modify the RDS security group. Add a rule to allow traffic from all the ports from the VPC CIDR block.",
+                    "Redeploy the Lambda function in the same subnet as the RDS instance. Ensure that the RDS security group allows traffic from the Lambda function.",
+                    "Create a security group for the Lambda function. Add a new rule in the RDS security group to allow traffic from the new Lambda security group.",
+                    "Create a VPC peering connection between the default VPC and VPC-A. Update the route tables accordingly."
+                ],
+                correct: [1],
+                explanation: "Lambda functions in the default VPC cannot access resources in a custom VPC directly. The Lambda function must be deployed within the same VPC (VPC-A) where the RDS instance resides. Once Lambda is in the same VPC, you need to ensure the security group attached to the RDS instance allows inbound traffic from the Lambda function's security group. This provides secure, private connectivity between Lambda and RDS within the same VPC.",
+                multipleChoice: false
+            },
+            {
+                id: 2,
+                question: "An AWS Lambda function must read data from an Amazon RDS MySQL database in a VPC and also reach a public endpoint over the internet to get additional data. Which steps must be taken to allow the function to access both the RDS resource and the public endpoint? (Select TWO.)",
+                options: [
+                    "Modify the default configuration for the Lambda function to associate it with an Amazon VPC private subnet.",
+                    "Modify the default network access control list to allow outbound traffic.",
+                    "Add a NAT Gateway to the VPC.",
+                    "Modify the default configuration of the Lambda function to associate it with a VPC public subnet.",
+                    "Add an environmental variable to the Lambda function to allow outbound internet access."
+                ],
+                correct: [0, 2],
+                explanation: "To access RDS in a VPC, Lambda must be configured to run within that VPC's private subnet (Option A). However, Lambda functions in private subnets don't have direct internet access. To reach public endpoints on the internet, you need a NAT Gateway deployed in a public subnet (Option C). The NAT Gateway allows Lambda to initiate outbound connections to the internet while keeping Lambda in the private subnet for security. The route table of the private subnet must route internet traffic (0.0.0.0/0) to the NAT Gateway.",
+                multipleChoice: true
+            },
+            {
+                id: 3,
+                question: "A developer needs to configure an Amazon S3 bucket policy so users can access an S3 bucket only by using specific VPC endpoints. Which solution should the developer implement?",
+                options: [
+                    "Create multiple S3 bucket policies by using each VPC endpoint ID that have the aws:SourceVpce value in the StringNotEquals condition.",
+                    "Create a single S3 bucket policy that has the aws:SourceVpc value in the StringNotEquals condition to use VPC ID.",
+                    "Create a single S3 bucket policy that has the aws:SourceVpce value in the StringNotEquals condition to use vpce*.",
+                    "Create a single S3 bucket policy that has multiple aws:SourceVpce values in the StringNotEquals condition. Repeat for all the VPC endpoint IDs."
+                ],
+                correct: [3],
+                explanation: "To restrict S3 bucket access to specific VPC endpoints, you should use the 'aws:SourceVpce' condition key in your bucket policy. Option D is correct because it creates a single, comprehensive bucket policy that denies access unless the request comes from one of the specified VPC endpoint IDs. You list all allowed VPC endpoint IDs in a StringNotEquals condition, which effectively creates a whitelist. This is more secure and maintainable than using VPC IDs (which would allow all endpoints in that VPC) or wildcards.",
+                multipleChoice: false
+            },
+            {
+                id: 4,
+                question: "A company uses AWS Lambda functions and an Amazon S3 trigger to process images into an S3 bucket. A development team set up multiple environments in a single AWS account. After a recent production deployment, the development team observed that the development S3 buckets invoked the production environment Lambda functions. These invocations caused unwanted execution of development S3 files by using production Lambda functions. The development team must prevent these invocations. Which solution will meet these requirements?",
+                options: [
+                    "Update the Lambda execution role for the production Lambda function to add a policy that allows the execution role to read from only the production environment S3 bucket.",
+                    "Move the development and production environments into separate AWS accounts. Add a resource policy to each Lambda function to allow only S3 buckets that are within the same account to invoke the function.",
+                    "Update the S3 bucket policy for the development S3 buckets to prevent invocation of production Lambda functions.",
+                    "Create separate VPCs for development and production environments with isolated network configurations."
+                ],
+                correct: [1],
+                explanation: "The best practice for isolating development and production environments is to use separate AWS accounts (Option B). This provides the strongest security boundary and prevents cross-environment access issues. By adding a resource policy to each Lambda function that restricts invocations to S3 buckets within the same account, you ensure complete isolation. Option A only controls what Lambda can read, not what can invoke it. Options C and D don't fully address the invocation control issue. Account-level separation is the recommended AWS best practice for environment isolation.",
+                multipleChoice: false
+            },
+            {
+                id: 5,
+                question: "Which of the following statements about VPC security groups and Network ACLs are correct? (Select TWO.)",
+                options: [
+                    "Security groups are stateful, meaning return traffic is automatically allowed.",
+                    "Network ACLs are stateful and automatically allow return traffic.",
+                    "Security groups can only have allow rules, not deny rules.",
+                    "Network ACLs are applied at the instance level.",
+                    "Network ACLs can have both allow and deny rules."
+                ],
+                correct: [0, 4],
+                explanation: "Security groups are STATEFUL (Option A), which means if you allow inbound traffic, the return traffic is automatically allowed regardless of outbound rules. Network ACLs are STATELESS, so you must explicitly allow both inbound and outbound traffic. Security groups only support ALLOW rules (no explicit deny), while Network ACLs support both ALLOW and DENY rules (Option E). Network ACLs operate at the subnet level, not instance level. These differences are crucial for properly securing your VPC resources.",
+                multipleChoice: true
+            },
+            {
+                id: 6,
+                question: "You have migrated an on-premise SQL Server database to an Amazon RDS database attached to a VPC inside a private subnet. Which of the following should you implement to connect an AWS Lambda function to the RDS instance?",
+                options: [
+                    "Use Lambda layers to connect to the internet and RDS separately.",
+                    "Configure Lambda to connect to the public subnet that will give internet access and use Security Group to access RDS inside the private subnet.",
+                    "Use Environment variables to pass in the RDS connection string.",
+                    "Configure Lambda to connect to VPC with private subnet and Security Group needed to access RDS."
+                ],
+                correct: [3],
+                explanation: "To connect Lambda to RDS in a private subnet, you must configure the Lambda function to run within the same VPC (Option D). You specify the subnet IDs (typically private subnets) and security group IDs in the Lambda VPC configuration. The security group attached to Lambda must be allowed by the RDS security group's inbound rules. While environment variables (Option C) are used to store connection strings, they alone don't establish network connectivity. Lambda layers (Option A) are for code/dependencies, not networking. Placing Lambda in a public subnet (Option B) is not recommended for security reasons.",
+                multipleChoice: false
+            },
+            {
+                id: 7,
+                question: "A developer created an AWS Lambda function that accesses resources in a VPC. The Lambda function polls an Amazon SQS queue for new messages through a VPC endpoint. Then the function calculates a rolling average of the numeric values that are contained in the messages. After initial tests of the Lambda function, the developer found that the value of the rolling average that the function returned was not accurate. How can the developer ensure that the function calculates an accurate rolling average?",
+                options: [
+                    "Set the function's reserved concurrency to 1. Calculate the rolling average in the function. Store the calculated rolling average in Amazon ElastiCache.",
+                    "Modify the function to store the values in Amazon ElastiCache. When the function initializes, use the previous values from the cache to calculate the rolling average.",
+                    "Set the function's provisioned concurrency to 1.",
+                    "Store the values in an Amazon DynamoDB table and calculate the rolling average from all stored values."
+                ],
+                correct: [0],
+                explanation: "The issue occurs because multiple concurrent Lambda executions process messages independently, each calculating their own rolling average without knowledge of values processed by other executions. Setting reserved concurrency to 1 (Option A) ensures only one instance of the function runs at a time, guaranteeing sequential processing and accurate rolling average calculations. Storing the result in ElastiCache provides fast access to the current rolling average. Option B doesn't prevent concurrent execution. Option C reserves instances but doesn't limit concurrency. Option D would work but is less efficient for rolling averages compared to maintaining state with concurrency control.",
+                multipleChoice: false
+            },
+            {
+                id: 8,
+                question: "A developer needs to enable private connectivity between a Lambda function and a DynamoDB table without traversing the internet. What solution should the developer implement?",
+                options: [
+                    "Create a NAT Gateway in the VPC.",
+                    "Create a VPC endpoint for DynamoDB.",
+                    "Create a carrier gateway in the VPC.",
+                    "Configure AWS PrivateLink for DynamoDB."
+                ],
+                correct: [1],
+                explanation: "VPC endpoints for DynamoDB (Option B) are Gateway endpoints that allow private connectivity between your VPC and DynamoDB without requiring internet access, NAT gateways, or VPN connections. Traffic stays within the AWS network, improving security and potentially reducing data transfer costs. You add the VPC endpoint to your route table, and requests to DynamoDB are automatically routed through the endpoint. NAT Gateway (Option A) is for internet access from private subnets. Carrier Gateway (Option C) is for 5G networks. While DynamoDB does use AWS PrivateLink architecture, you specifically create a VPC endpoint, not configure PrivateLink directly.",
+                multipleChoice: false
+            },
+            {
+                id: 9,
+                question: "A company has an Amazon S3 bucket containing premier content that it intends to make available to only paid subscribers through applications running in specific VPCs. What should the company do?",
+                options: [
+                    "Create a CloudFront distribution and restrict access using signed URLs.",
+                    "Create VPC endpoints for S3 and configure S3 bucket policies to allow access only from these VPC endpoints.",
+                    "Use AWS WAF to restrict access to the S3 bucket based on IP addresses.",
+                    "Enable S3 Transfer Acceleration and use presigned URLs."
+                ],
+                correct: [1],
+                explanation: "To restrict S3 access to specific VPCs, create VPC endpoints for S3 and configure the bucket policy to allow access only from those endpoint IDs using the 'aws:SourceVpce' condition (Option B). This ensures that only applications running in your specified VPCs can access the content, and traffic never traverses the internet. CloudFront with signed URLs (Option A) is for content delivery and public internet access control. AWS WAF (Option C) protects web applications, not S3 directly. S3 Transfer Acceleration (Option D) speeds up uploads but doesn't provide VPC-level access control.",
+                multipleChoice: false
+            },
+            {
+                id: 10,
+                question: "Which of the following statements about VPC endpoints are correct? (Select TWO.)",
+                options: [
+                    "Gateway endpoints support S3 and DynamoDB only.",
+                    "Interface endpoints use AWS PrivateLink and support most AWS services.",
+                    "Gateway endpoints incur data processing charges.",
+                    "Interface endpoints require modifications to route tables.",
+                ],
+                correct: [0, 1],
+                explanation: "Gateway endpoints (Option A) are available ONLY for S3 and DynamoDB, are free to use (no data processing charges), and require route table modifications. Interface endpoints (Option E) use AWS PrivateLink technology and create elastic network interfaces (ENIs) in your specified subnets, giving them private IP addresses. Interface endpoints support most AWS services and DO incur hourly charges plus data processing fees. Interface endpoints don't require route table changes since they use DNS resolution. Understanding these differences helps you choose the right endpoint type for your use case and budget.",
+                multipleChoice: true
+            },
+            {
+                id: 11,
+                question: "A developer wants to ensure that Lambda functions can access RDS databases in a private subnet while also making API calls to external services on the internet. What is the MOST secure architecture?",
+                options: [
+                    "Place Lambda in a public subnet with an internet gateway.",
+                    "Place Lambda in a private subnet with a NAT gateway in a public subnet.",
+                    "Place Lambda in the default VPC and use VPC peering.",
+                    "Place Lambda in a public subnet with a NAT instance."
+                ],
+                correct: [1],
+                explanation: "The most secure architecture (Option B) is to place Lambda in a private subnet alongside RDS, then use a NAT Gateway in a public subnet to enable outbound internet access. This keeps Lambda and RDS isolated from direct internet access (no public IPs), reducing the attack surface. The NAT Gateway handles outbound internet traffic while preventing unsolicited inbound connections. Placing Lambda in a public subnet (Options A and D) exposes it unnecessarily. Using the default VPC with peering (Option C) is more complex and less secure than keeping everything in one properly configured VPC.",
+                multipleChoice: false
+            },
+            {
+                id: 12,
+                question: "A company runs applications in multiple VPCs that need to communicate with each other. The company wants to avoid using the public internet. What should the developer implement?",
+                options: [
+                    "VPC peering connections between the VPCs.",
+                    "AWS VPN connections between the VPCs.",
+                    "Multiple internet gateways, one per VPC.",
+                    "AWS Direct Connect for each VPC."
+                ],
+                correct: [0],
+                explanation: "VPC peering (Option A) creates a direct network connection between two VPCs, allowing resources to communicate using private IP addresses without traversing the internet. Traffic stays within the AWS network, providing better security and lower latency. VPC peering is the simplest and most cost-effective solution for VPC-to-VPC communication within AWS. AWS VPN (Option B) is typically for on-premises connectivity. Internet gateways (Option C) expose resources to the internet. Direct Connect (Option D) is for dedicated on-premises connections and is overkill for VPC-to-VPC communication.",
+                multipleChoice: false
+            },
+            {
+                id: 13,
+                question: "What is the main difference between a Security Group and a Network ACL in AWS VPC?",
+                options: [
+                    "Security Groups are stateful; Network ACLs are stateless.",
+                    "Security Groups are stateless; Network ACLs are stateful.",
+                    "Both are stateful but applied at different levels.",
+                    "Both are stateless but have different rule priorities."
+                ],
+                correct: [0],
+                explanation: "The fundamental difference is that Security Groups are STATEFUL while Network ACLs are STATELESS (Option A). Stateful means Security Groups automatically allow return traffic for allowed inbound connections - if you allow HTTP inbound, the HTTP response is automatically allowed outbound. With stateless Network ACLs, you must explicitly configure both inbound and outbound rules for bidirectional communication. Additionally, Security Groups operate at the instance level (allow rules only), while Network ACLs operate at the subnet level (allow and deny rules). This distinction is critical for properly designing VPC security.",
+                multipleChoice: false
+            },
+            {
+                id: 14,
+                question: "A developer needs to connect an on-premises data center to an AWS VPC for a hybrid cloud architecture. Which service provides a dedicated network connection?",
+                options: [
+                    "AWS Direct Connect",
+                    "VPC Peering",
+                    "Internet Gateway",
+                    "AWS VPN"
+                ],
+                correct: [0],
+                explanation: "AWS Direct Connect (Option A) provides a dedicated, private network connection between your on-premises data center and AWS. It offers consistent network performance, reduced bandwidth costs for large data transfers, and doesn't traverse the public internet. This is ideal for hybrid architectures requiring high throughput and low latency. VPC Peering (Option B) connects VPCs within AWS, not on-premises networks. Internet Gateway (Option C) enables internet access. While AWS VPN (Option D) can connect on-premises to VPC, it uses the internet and provides lower bandwidth compared to Direct Connect's dedicated connection.",
+                multipleChoice: false
+            },
+            {
+                id: 15,
+                question: "When configuring Lambda to access resources in a VPC, which of the following is required? (Select TWO.)",
+                options: [
+                    "Subnet IDs where Lambda will run",
+                    "Public IP address for the Lambda function",
+                    "Security group IDs to control traffic",
+                    "Internet Gateway attached to the VPC",
+                    "NAT Gateway for all Lambda functions"
+                ],
+                correct: [0, 2],
+                explanation: "To configure Lambda for VPC access, you must specify: 1) Subnet IDs (Option A) - at least one, typically multiple for high availability across AZs, and 2) Security Group IDs (Option C) - to control what traffic the Lambda function can send/receive. AWS creates elastic network interfaces in your specified subnets. Lambda functions don't get public IPs (Option B). An Internet Gateway (Option D) is only needed if Lambda requires internet access via a public subnet. A NAT Gateway (Option E) is only required if Lambda in a private subnet needs outbound internet access.",
+                multipleChoice: true
+            },
+            {
+                id: 16,
+                question: "A developer wants to grant internet access to EC2 instances in a private subnet. What is the most cost-effective solution?",
+                options: [
+                    "Attach an internet gateway directly to the private subnet.",
+                    "Create a NAT gateway in a public subnet and update the route table of the private subnet.",
+                    "Assign public IP addresses to all EC2 instances in the private subnet.",
+                    "Create a VPC endpoint for internet access."
+                ],
+                correct: [1],
+                explanation: "The correct solution (Option B) is to deploy a NAT Gateway in a public subnet and configure the private subnet's route table to route internet-bound traffic (0.0.0.0/0) to the NAT Gateway. The NAT Gateway then forwards traffic through the Internet Gateway. This allows instances in the private subnet to initiate outbound internet connections while preventing unsolicited inbound connections, maintaining security. You cannot attach an Internet Gateway directly to a subnet (Option A). Assigning public IPs (Option C) would make instances directly accessible from the internet, defeating the purpose of a private subnet. VPC endpoints (Option D) are for AWS services, not general internet access.",
+                multipleChoice: false
+            },
+            {
+                id: 17,
+                question: "What is the purpose of a VPC endpoint for S3?",
+                options: [
+                    "To provide faster upload speeds to S3.",
+                    "To enable private connectivity to S3 without using an internet gateway or NAT device.",
+                    "To encrypt all data transferred to S3.",
+                    "To enable cross-region replication."
+                ],
+                correct: [1],
+                explanation: "A VPC endpoint for S3 (Option B) allows private connectivity between your VPC and S3 without traffic traversing the internet, Internet Gateway, NAT device, or VPN connection. Traffic stays within the AWS network, improving security and potentially reducing data transfer costs. You can also use bucket policies to restrict access to specific VPC endpoints. VPC endpoints don't inherently improve upload speeds (Option A) - that's S3 Transfer Acceleration. They don't handle encryption (Option C) - that's controlled by S3 bucket settings. Cross-region replication (Option D) is an S3 feature unrelated to VPC endpoints.",
+                multipleChoice: false
+            },
+            {
+                id: 18,
+                question: "A Lambda function in a VPC needs to access both DynamoDB and the internet. What is the MINIMUM configuration required?",
+                options: [
+                    "VPC endpoint for DynamoDB only.",
+                    "NAT Gateway only.",
+                    "VPC endpoint for DynamoDB and a NAT Gateway for internet access.",
+                    "Internet Gateway only."
+                ],
+                correct: [2],
+                explanation: "You need BOTH components (Option C): 1) A VPC endpoint for DynamoDB provides private, efficient access to DynamoDB without using the internet, and 2) A NAT Gateway (deployed in a public subnet) enables Lambda in a private subnet to access the internet for other API calls. Just a VPC endpoint (Option A) won't provide internet access. Just a NAT Gateway (Option B) means DynamoDB traffic would unnecessarily go through the NAT Gateway to reach DynamoDB over the internet. An Internet Gateway alone (Option D) doesn't work for Lambda in private subnets. This combination optimizes both security and cost.",
+                multipleChoice: false
+            },
+            {
+                id: 19,
+                question: "Which AWS service allows you to privately connect your VPC to supported AWS services without requiring an internet gateway, NAT device, VPN connection, or AWS Direct Connect connection?",
+                options: [
+                    "VPC Peering",
+                    "AWS PrivateLink",
+                    "Transit Gateway",
+                    "Virtual Private Gateway"
+                ],
+                correct: [1],
+                explanation: "AWS PrivateLink (Option B) is the underlying technology that powers interface VPC endpoints, allowing private connectivity to AWS services and third-party services. It uses elastic network interfaces with private IPs in your VPC, ensuring traffic never traverses the public internet. PrivateLink provides secure, scalable connectivity to services like API Gateway, CloudWatch, SNS, etc. VPC Peering (Option A) connects VPCs to each other. Transit Gateway (Option C) is a hub for connecting multiple VPCs and on-premises networks. Virtual Private Gateway (Option D) is used for VPN connections to on-premises networks.",
+                multipleChoice: false
+            },
+            {
+                id: 20,
+                question: "A developer needs to ensure that traffic between application tiers within a VPC is encrypted. What approach should be implemented?",
+                options: [
+                    "Enable VPC Flow Logs with encryption.",
+                    "Use Security Groups to enforce encrypted connections.",
+                    "Implement TLS/SSL encryption at the application layer.",
+                    "Enable VPC encryption in the VPC settings."
+                ],
+                correct: [2],
+                explanation: "Encrypting traffic within a VPC requires implementing TLS/SSL encryption at the application layer (Option C). This means your applications must use HTTPS, encrypted database connections, or other encrypted protocols to communicate. VPC itself doesn't provide built-in traffic encryption between resources - encryption must be handled by the applications. VPC Flow Logs (Option A) only capture metadata about traffic, not encrypt it. Security Groups (Option B) control traffic flow but don't encrypt data. There is no 'VPC encryption' setting (Option D) that encrypts all internal traffic. Always implement encryption at the application level for sensitive data.",
+                multipleChoice: false
+            }
+        ];
+
+        // Quiz rendering and logic
+        document.addEventListener('DOMContentLoaded', function() {
+            const quizContent = document.getElementById('quizContent');
+            
+            quizData.forEach((questionData, index) => {
+                const questionBlock = document.createElement('div');
+                questionBlock.className = 'question-block';
+                questionBlock.id = `question-${questionData.id}`;
+                
+                // Question header
+                const questionHeader = document.createElement('div');
+                questionHeader.className = 'question-header';
+                
+                const questionNumber = document.createElement('div');
+                questionNumber.className = 'question-number';
+                questionNumber.textContent = questionData.id;
+                
+                const questionText = document.createElement('div');
+                questionText.className = 'question-text';
+                questionText.innerHTML = questionData.question;
+                
+                if (questionData.multipleChoice) {
+                    const multipleBadge = document.createElement('div');
+                    multipleBadge.className = 'multiple-badge';
+                    multipleBadge.textContent = 'Select TWO';
+                    questionText.appendChild(multipleBadge);
+                }
+                
+                questionHeader.appendChild(questionNumber);
+                questionHeader.appendChild(questionText);
+                
+                // Options
+                const optionsContainer = document.createElement('div');
+                optionsContainer.className = 'options';
+                
+                questionData.options.forEach((option, optionIndex) => {
+                    const optionElement = document.createElement('div');
+                    optionElement.className = 'option';
+                    optionElement.dataset.optionIndex = optionIndex;
+                    
+                    const input = document.createElement('input');
+                    input.type = questionData.multipleChoice ? 'checkbox' : 'radio';
+                    input.name = `question-${questionData.id}`;
+                    input.value = optionIndex;
+                    
+                    const optionText = document.createElement('div');
+                    optionText.className = 'option-text';
+                    optionText.textContent = option;
+                    
+                    optionElement.appendChild(input);
+                    optionElement.appendChild(optionText);
+                    
+                    optionElement.addEventListener('click', function() {
+                        if (optionElement.classList.contains('disabled')) return;
+                        
+                        if (questionData.multipleChoice) {
+                            input.checked = !input.checked;
+                            optionElement.classList.toggle('selected', input.checked);
+                        } else {
+                            // Deselect all other options
+                            optionsContainer.querySelectorAll('.option').forEach(opt => {
+                                opt.classList.remove('selected');
+                                opt.querySelector('input').checked = false;
+                            });
+                            
+                            input.checked = true;
+                            optionElement.classList.add('selected');
+                        }
+                        
+                        updateSubmitButton(questionData.id);
+                    });
+                    
+                    optionsContainer.appendChild(optionElement);
+                });
+                
+                // Submit button
+                const submitBtnContainer = document.createElement('div');
+                submitBtnContainer.className = 'submit-btn-container';
+                
+                const submitBtn = document.createElement('button');
+                submitBtn.className = 'submit-btn';
+                submitBtn.textContent = 'Submit Answer';
+                submitBtn.disabled = true;
+                
+                submitBtn.addEventListener('click', function() {
+                    submitAnswer(questionData.id);
+                });
+                
+                submitBtnContainer.appendChild(submitBtn);
+                
+                // Result section
+                const resultSection = document.createElement('div');
+                resultSection.className = 'result-section';
+                
+                const answerBox = document.createElement('div');
+                answerBox.className = 'answer-box';
+                
+                const answerTitle = document.createElement('div');
+                answerTitle.className = 'answer-title';
+                answerTitle.textContent = 'Correct Answer:';
+                
+                const answerValue = document.createElement('div');
+                answerValue.className = 'answer-value';
+                
+                answerBox.appendChild(answerTitle);
+                answerBox.appendChild(answerValue);
+                
+                const explanationBox = document.createElement('div');
+                explanationBox.className = 'explanation-box';
+                
+                const explanationTitle = document.createElement('div');
+                explanationTitle.className = 'explanation-title';
+                explanationTitle.innerHTML = '💡 Explanation';
+                
+                const explanationText = document.createElement('div');
+                explanationText.className = 'explanation-text';
+                explanationText.textContent = questionData.explanation;
+                
+                explanationBox.appendChild(explanationTitle);
+                explanationBox.appendChild(explanationText);
+                
+                resultSection.appendChild(answerBox);
+                resultSection.appendChild(explanationBox);
+                
+                // Assemble question block
+                questionBlock.appendChild(questionHeader);
+                questionBlock.appendChild(optionsContainer);
+                questionBlock.appendChild(submitBtnContainer);
+                questionBlock.appendChild(resultSection);
+                
+                quizContent.appendChild(questionBlock);
+            });
+            
+            function updateSubmitButton(questionId) {
+                const questionBlock = document.getElementById(`question-${questionId}`);
+                const submitBtn = questionBlock.querySelector('.submit-btn');
+                const options = questionBlock.querySelectorAll('.option input:checked');
+                
+                submitBtn.disabled = options.length === 0;
+            }
+            
+            function submitAnswer(questionId) {
+                const questionData = quizData.find(q => q.id === questionId);
+                const questionBlock = document.getElementById(`question-${questionId}`);
+                const options = questionBlock.querySelectorAll('.option');
+                const submitBtn = questionBlock.querySelector('.submit-btn');
+                const resultSection = questionBlock.querySelector('.result-section');
+                const answerBox = questionBlock.querySelector('.answer-box');
+                const answerValue = questionBlock.querySelector('.answer-value');
+                
+                // Get selected options
+                const selectedOptions = [];
+                options.forEach(option => {
+                    if (option.querySelector('input').checked) {
+                        selectedOptions.push(parseInt(option.dataset.optionIndex));
+                    }
+                });
+                
+                // Check if answer is correct
+                const isCorrect = arraysEqual(selectedOptions.sort(), questionData.correct.sort());
+                
+                // Disable all options
+                options.forEach(option => {
+                    option.classList.add('disabled');
+                    option.querySelector('input').disabled = true;
+                });
+                
+                // Mark correct/incorrect options
+                options.forEach(option => {
+                    const optionIndex = parseInt(option.dataset.optionIndex);
+                    
+                    if (questionData.correct.includes(optionIndex)) {
+                        option.classList.add('correct');
+                        const checkIcon = document.createElement('span');
+                        checkIcon.className = 'check-icon';
+                        checkIcon.textContent = '✓';
+                        option.appendChild(checkIcon);
+                    } else if (selectedOptions.includes(optionIndex) && !questionData.correct.includes(optionIndex)) {
+                        option.classList.add('incorrect');
+                        const xIcon = document.createElement('span');
+                        xIcon.className = 'x-icon';
+                        xIcon.textContent = '✗';
+                        option.appendChild(xIcon);
+                    }
+                });
+                
+                // Show correct answer
+                const correctAnswerText = questionData.correct.map(idx => 
+                    String.fromCharCode(65 + idx) + '. ' + questionData.options[idx]
+                ).join(questionData.multipleChoice ? '<br>' : '');
+                
+                answerValue.innerHTML = correctAnswerText;
+                
+                if (!isCorrect) {
+                    answerBox.classList.add('incorrect-answer');
+                }
+                
+                // Show result section
+                resultSection.classList.add('show');
+                questionBlock.classList.add('submitted');
+                
+                // Disable submit button
+                submitBtn.disabled = true;
+            }
+            
+            function arraysEqual(a, b) {
+                if (a === b) return true;
+                if (a == null || b == null) return false;
+                if (a.length !== b.length) return false;
+                
+                for (let i = 0; i < a.length; i++) {
+                    if (a[i] !== b[i]) return false;
+                }
+                return true;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS Lambda Quiz</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 30px;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .score-board {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .question {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .question.answered-correct {
+            border-left-color: #10b981;
+            background: #f0fdf4;
+        }
+
+        .question.answered-wrong {
+            border-left-color: #ef4444;
+            background: #fef2f2;
+        }
+
+        .question-text {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .question-number {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .multi-select-note {
+            font-size: 12px;
+            color: #666;
+            font-style: italic;
+            margin-top: 5px;
+            margin-bottom: 10px;
+        }
+
+        .options {
+            margin-top: 15px;
+        }
+
+        .option {
+            display: flex;
+            align-items: flex-start;
+            padding: 12px;
+            margin: 8px 0;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .option:hover:not(.disabled) {
+            border-color: #667eea;
+            background: #f0f4ff;
+            transform: translateX(5px);
+        }
+
+        .option.disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .option.correct {
+            border-color: #10b981;
+            background: #d1fae5;
+        }
+
+        .option.wrong {
+            border-color: #ef4444;
+            background: #fee2e2;
+        }
+
+        .option input[type="checkbox"],
+        .option input[type="radio"] {
+            margin-right: 12px;
+            margin-top: 3px;
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+        }
+
+        .option.disabled input {
+            cursor: not-allowed;
+        }
+
+        .option label {
+            cursor: pointer;
+            flex: 1;
+            line-height: 1.5;
+        }
+
+        .option.disabled label {
+            cursor: not-allowed;
+        }
+
+        .feedback {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .feedback.show {
+            display: block;
+        }
+
+        .feedback.correct {
+            background: #d1fae5;
+            color: #065f46;
+            border: 2px solid #10b981;
+        }
+
+        .feedback.wrong {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 2px solid #ef4444;
+        }
+
+        .feedback-icon {
+            font-size: 20px;
+            margin-right: 8px;
+        }
+
+        .check-button {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .check-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .check-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .reset-button {
+            display: block;
+            width: 200px;
+            margin: 30px auto;
+            padding: 15px;
+            background: #6b7280;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .reset-button:hover {
+            background: #4b5563;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 AWS Lambda Developer Associate Quiz</h1>
+        
+        <div class="score-board">
+            Điểm: <span id="scoreDisplay">0/10</span>
+        </div>
+
+        <div id="quizContainer">
+            <!-- Question 1 -->
+            <div class="question" data-question="1">
+                <div class="question-text">
+                    <span class="question-number">Câu 1:</span> A development team wants to deploy an AWS Lambda function that requires significant CPU utilization. As a Developer Associate, which of the following would you suggest for reducing the average runtime of the function?
+                </div>
+                <div class="options">
+                    <div class="option" data-value="A">
+                        <input type="radio" id="q1a" name="q1" value="A">
+                        <label for="q1a">A. Deploy the function into multiple AWS Regions</label>
+                    </div>
+                    <div class="option" data-value="B">
+                        <input type="radio" id="q1b" name="q1" value="B">
+                        <label for="q1b">B. Deploy the function with its CPU allocation set to the maximum amount</label>
+                    </div>
+                    <div class="option" data-value="C">
+                        <input type="radio" id="q1c" name="q1" value="C">
+                        <label for="q1c">C. Deploy the function with its memory allocation set to the maximum amount</label>
+                    </div>
+                    <div class="option" data-value="D">
+                        <input type="radio" id="q1d" name="q1" value="D">
+                        <label for="q1d">D. Deploy the function using Lambda layers</label>
+                    </div>
+                </div>
+                <button class="check-button" onclick="checkAnswer(1, ['C'])">Kiểm tra đáp án</button>
+                <div class="feedback"></div>
+            </div>
+
+            <!-- Question 2 -->
+            <div class="question" data-question="2">
+                <div class="question-text">
+                    <span class="question-number">Câu 2:</span> A developer wants to package the code and dependencies for the application-specific Lambda functions as container images to be hosted on Amazon Elastic Container Registry (ECR). Which of the following options are correct for the given requirement?
+                </div>
+                <div class="multi-select-note">(Chọn 2 đáp án)</div>
+                <div class="options">
+                    <div class="option" data-value="A">
+                        <input type="checkbox" id="q2a" name="q2" value="A">
+                        <label for="q2a">A. You can test the containers locally using the Lambda Runtime API</label>
+                    </div>
+                    <div class="option" data-value="B">
+                        <input type="checkbox" id="q2b" name="q2" value="B">
+                        <label for="q2b">B. Lambda supports both Windows and Linux-based container images</label>
+                    </div>
+                    <div class="option" data-value="C">
+                        <input type="checkbox" id="q2c" name="q2" value="C">
+                        <label for="q2c">C. You must create the Lambda function from the same account as the container registry in Amazon ECR</label>
+                    </div>
+                    <div class="option" data-value="D">
+                        <input type="checkbox" id="q2d" name="q2" value="D">
+                        <label for="q2d">D. You can deploy Lambda function as a container image, with a maximum size of 15 GB</label>
+                    </div>
+                    <div class="option" data-value="E">
+                        <input type="checkbox" id="q2e" name="q2" value="E">
+                        <label for="q2e">E. To deploy a container image to Lambda, the container image must implement the Lambda Runtime API</label>
+                    </div>
+                </div>
+                <button class="check-button" onclick="checkAnswer(2, ['A', 'E'])">Kiểm tra đáp án</button>
+                <div class="feedback"></div>
+            </div>
+
+            <!-- Question 3 -->
+            <div class="question" data-question="3">
+                <div class="question-text">
+                    <span class="question-number">Câu 3:</span> The development team at a retail company is gearing up for the upcoming Thanksgiving sale and wants to make sure that the application's serverless backend running via Lambda functions does not hit latency bottlenecks as a result of the traffic spike. As a Developer Associate, which of the following solutions would you recommend to address this use-case?
+                </div>
+                <div class="options">
+                    <div class="option" data-value="A">
+                        <input type="radio" id="q3a" name="q3" value="A">
+                        <label for="q3a">A. No need to make any special provisions as Lambda is automatically scalable because of its serverless nature</label>
+                    </div>
+                    <div class="option" data-value="B">
+                        <input type="radio" id="q3b" name="q3" value="B">
+                        <label for="q3b">B. Configure Application Auto Scaling to manage Lambda provisioned concurrency on a schedule</label>
+                    </div>
+                    <div class="option" data-value="C">
+                        <input type="radio" id="q3c" name="q3" value="C">
+                        <label for="q3c">C. Configure Application Auto Scaling to manage Lambda reserved concurrency on a schedule</label>
+                    </div>
+                    <div class="option" data-value="D">
+                        <input type="radio" id="q3d" name="q3" value="D">
+                        <label for="q3d">D. Add an Application Load Balancer in front of the Lambda functions</label>
+                    </div>
+                </div>
+                <button class="check-button" onclick="checkAnswer(3, ['B'])">Kiểm tra đáp án</button>
+                <div class="feedback"></div>
+            </div>
+
+            <!-- Question 4 -->
+            <div class="question" data-question="4">
+                <div class="question-text">
+                    <span class="question-number">Câu 4:</span> A cybersecurity company is running a serverless backend with several compute-heavy workflows running on Lambda functions. The development team has noticed a performance lag after analyzing the performance metrics for the Lambda functions. As a Developer Associate, which of the following options would you suggest as the BEST solution to address the compute-heavy workloads?
+                </div>
+                <div class="options">
+                    <div class="option" data-value="A">
+                        <input type="radio" id="q4a" name="q4" value="A">
+                        <label for="q4a">A. Use provisioned concurrency to account for the compute-heavy workflows</label>
+                    </div>
+                    <div class="option" data-value="B">
+                        <input type="radio" id="q4b" name="q4" value="B">
+                        <label for="q4b">B. Increase the amount of memory available to the Lambda functions</label>
+                    </div>
+                    <div class="option" data-value="C">
+                        <input type="radio" id="q4c" name="q4" value="C">
+                        <label for="q4c">C. Invoke the Lambda functions asynchronously to process the compute-heavy workflows</label>
+                    </div>
+                    <div class="option" data-value="D">
+                        <input type="radio" id="q4d" name="q4" value="D">
+                        <label for="q4d">D. Use reserved concurrency to account for the compute-heavy workflows</label>
+                    </div>
+                </div>
+                <button class="check-button" onclick="checkAnswer(4, ['B'])">Kiểm tra đáp án</button>
+                <div class="feedback"></div>
+            </div>
+
+            <!-- Question 5 -->
+            <div class="question" data-question="5">
+                <div class="question-text">
+                    <span class="question-number">Câu 5:</span> You have migrated an on-premise SQL Server database to an Amazon Relational Database Service (RDS) database attached to a VPC inside a private subnet. Also, the related Java application, hosted on-premise, has been moved to an Amazon Lambda function. Which of the following should you implement to connect AWS Lambda function to its RDS instance?
+                </div>
+                <div class="options">
+                    <div class="option" data-value="A">
+                        <input type="radio" id="q5a" name="q5" value="A">
+                        <label for="q5a">A. Use Environment variables to pass in the RDS connection string</label>
+                    </div>
+                    <div class="option" data-value="B">
+                        <input type="radio" id="q5b" name="q5" value="B">
+                        <label for="q5b">B. Configure Lambda to connect to VPC with private subnet and Security Group needed to access RDS</label>
+                    </div>
+                    <div class="option" data-value="C">
+                        <input type="radio" id="q5c" name="q5" value="C">
+                        <label for="q5c">C. Use Lambda layers to connect to the internet and RDS separately</label>
+                    </div>
+                    <div class="option" data-value="D">
+                        <input type="radio" id="q5d" name="q5" value="D">
+                        <label for="q5d">D. Configure lambda to connect to the public subnet that will give internet access and use Security Group to access RDS inside the private subnet</label>
+                    </div>
+                </div>
+                <button class="check-button" onclick="checkAnswer(5, ['B'])">Kiểm tra đáp án</button>
+                <div class="feedback"></div>
+            </div>
+
+            <!-- Question 6 -->
+            <div class="question" data-question="6">
+                <div class="question-text">
+                    <span class="question-number">Câu 6:</span> You are a developer working with the AWS CLI to create Lambda functions that contain environment variables. Your functions will require over 50 environment variables consisting of sensitive information of database table names. What is the total set size/number of environment variables you can create for AWS Lambda?
+                </div>
+                <div class="options">
+                    <div class="option" data-value="A">
+                        <input type="radio" id="q6a" name="q6" value="A">
+                        <label for="q6a">A. The total size of all environment variables shouldn't exceed 8 KB. There is no limit on the number of variables</label>
+                    </div>
+                    <div class="option" data-value="B">
+                        <input type="radio" id="q6b" name="q6" value="B">
+                        <label for="q6b">B. The total size of all environment variables shouldn't exceed 4 KB. The maximum number of variables that can be created is 35</label>
+                    </div>
+                    <div class="option" data-value="C">
+                        <input type="radio" id="q6c" name="q6" value="C">
+                        <label for="q6c">C. The total size of all environment variables shouldn't exceed 4 KB. There is no limit on the number of variables</label>
+                    </div>
+                    <div class="option" data-value="D">
+                        <input type="radio" id="q6d" name="q6" value="D">
+                        <label for="q6d">D. The total size of all environment variables shouldn't exceed 8 KB. The maximum number of variables that can be created is 50</label>
+                    </div>
+                </div>
+                <button class="check-button" onclick="checkAnswer(6, ['C'])">Kiểm tra đáp án</button>
+                <div class="feedback"></div>
+            </div>
+
+            <!-- Question 7 -->
+            <div class="question" data-question="7">
+                <div class="question-text">
+                    <span class="question-number">Câu 7:</span> An IT company has migrated to a serverless application stack on the AWS Cloud with the compute layer being implemented via Lambda functions. The engineering managers would like to actively troubleshoot any failures in the Lambda functions. As a Developer Associate, which of the following solutions would you suggest for this use-case?
+                </div>
+                <div class="options">
+                    <div class="option" data-value="A">
+                        <input type="radio" id="q7a" name="q7" value="A">
+                        <label for="q7a">A. The developers should insert logging statements in the Lambda function code which are then available via CloudWatch logs</label>
+                    </div>
+                    <div class="option" data-value="B">
+                        <input type="radio" id="q7b" name="q7" value="B">
+                        <label for="q7b">B. Use EventBridge to identify and notify any failures in the Lambda code</label>
+                    </div>
+                    <div class="option" data-value="C">
+                        <input type="radio" id="q7c" name="q7" value="C">
+                        <label for="q7c">C. Use CodeDeploy to identify and notify any failures in the Lambda code</label>
+                    </div>
+                    <div class="option" data-value="D">
+                        <input type="radio" id="q7d" name="q7" value="D">
+                        <label for="q7d">D. Use CodeCommit to identify and notify any failures in the Lambda code</label>
+                    </div>
+                </div>
+                <button class="check-button" onclick="checkAnswer(7, ['A'])">Kiểm tra đáp án</button>
+                <div class="feedback"></div>
+            </div>
+
+            <!-- Question 8 -->
+            <div class="question" data-question="8">
+                <div class="question-text">
+                    <span class="question-number">Câu 8:</span> A developer has pushed a Lambda function that pushes data into an RDS MySQL database. On the first execution, the Lambda function takes 2 seconds to execute. On the second execution and all the subsequent ones, the Lambda function takes 1.9 seconds to execute. What can be done to improve the execution time of the Lambda function?
+                </div>
+                <div class="options">
+                    <div class="option" data-value="A">
+                        <input type="radio" id="q8a" name="q8" value="A">
+                        <label for="q8a">A. Upgrade the MySQL instance type</label>
+                    </div>
+                    <div class="option" data-value="B">
+                        <input type="radio" id="q8b" name="q8" value="B">
+                        <label for="q8b">B. Change the runtime to Node.js</label>
+                    </div>
+                    <div class="option" data-value="C">
+                        <input type="radio" id="q8c" name="q8" value="C">
+                        <label for="q8c">C. Increase the Lambda function RAM</label>
+                    </div>
+                    <div class="option" data-value="D">
+                        <input type="radio" id="q8d" name="q8" value="D">
+                        <label for="q8d">D. Move the database connection out of the handler</label>
+                    </div>
+                </div>
+                <button class="check-button" onclick="checkAnswer(8, ['D'])">Kiểm tra đáp án</button>
+                <div class="feedback"></div>
+            </div>
+
+            <!-- Question 9 -->
+            <div class="question" data-question="9">
+                <div class="question-text">
+                    <span class="question-number">Câu 9:</span> The development team at a company wants to insert vendor records into an Amazon DynamoDB table as soon as the vendor uploads a new file into an Amazon S3 bucket. As a Developer Associate, which set of steps would you recommend to achieve this?
+                </div>
+                <div class="options">
+                    <div class="option" data-value="A">
+                        <input type="radio" id="q9a" name="q9" value="A">
+                        <label for="q9a">A. Create an S3 event to invoke a Lambda function that inserts records into DynamoDB</label>
+                    </div>
+                    <div class="option" data-value="B">
+                        <input type="radio" id="q9b" name="q9" value="B">
+                        <label for="q9b">B. Develop a Lambda function that will poll the S3 bucket and then insert the records into DynamoDB</label>
+                    </div>
+                    <div class="option" data-value="C">
+                        <input type="radio" id="q9c" name="q9" value="C">
+                        <label for="q9c">C. Set up an event with Amazon CloudWatch Events that will monitor the S3 bucket and then insert the records into DynamoDB</label>
+                    </div>
+                    <div class="option" data-value="D">
+                        <input type="radio" id="q9d" name="q9" value="D">
+                        <label for="q9d">D. Write a cron job that will execute a Lambda function at a scheduled time and insert the records into DynamoDB</label>
+                    </div>
+                </div>
+                <button class="check-button" onclick="checkAnswer(9, ['A'])">Kiểm tra đáp án</button>
+                <div class="feedback"></div>
+            </div>
+
+            <!-- Question 10 -->
+            <div class="question" data-question="10">
+                <div class="question-text">
+                    <span class="question-number">Câu 10:</span> Your company wants to move away from manually managing Lambda in the AWS console and wants to upload and update them using AWS CloudFormation. How do you declare an AWS Lambda function in CloudFormation?
+                </div>
+                <div class="multi-select-note">(Chọn 2 đáp án)</div>
+                <div class="options">
+                    <div class="option" data-value="A">
+                        <input type="checkbox" id="q10a" name="q10" value="A">
+                        <label for="q10a">A. Upload all the code as a zip to S3 and refer the object in AWS::Lambda::Function block</label>
+                    </div>
+                    <div class="option" data-value="B">
+                        <input type="checkbox" id="q10b" name="q10" value="B">
+                        <label for="q10b">B. Write the AWS Lambda code inline in CloudFormation in the AWS::Lambda::Function block as long as there are no third-party dependencies</label>
+                    </div>
+                    <div class="option" data-value="C">
+                        <input type="checkbox" id="q10c" name="q10" value="C">
+                        <label for="q10c">C. Write the AWS Lambda code inline in CloudFormation in the AWS::Lambda::Function block and reference the dependencies as a zip file stored in S3</label>
+                    </div>
+                    <div class="option" data-value="D">
+                        <input type="checkbox" id="q10d" name="q10" value="D">
+                        <label for="q10d">D. Upload all the code to CodeCommit and refer to the CodeCommit Repository in AWS::Lambda::Function block</label>
+                    </div>
+                    <div class="option" data-value="E">
+                        <input type="checkbox" id="q10e" name="q10" value="E">
+                        <label for="q10e">E. Upload all the code as a folder to S3 and refer the folder in AWS::Lambda::Function block</label>
+                    </div>
+                </div>
+                <button class="check-button" onclick="checkAnswer(10, ['A', 'B'])">Kiểm tra đáp án</button>
+                <div class="feedback"></div>
+            </div>
+        </div>
+
+        <button class="reset-button" onclick="resetQuiz()">Làm lại từ đầu</button>
+    </div>
+
+    <script>
+        let score = 0;
+        const answeredQuestions = new Set();
+
+        // Handle option clicks
+        document.querySelectorAll('.option').forEach(option => {
+            option.addEventListener('click', function() {
+                if (this.classList.contains('disabled')) return;
+                
+                const input = this.querySelector('input');
+                if (input.type === 'radio') {
+                    this.parentElement.querySelectorAll('.option').forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+                    input.checked = true;
+                } else if (input.type === 'checkbox') {
+                    input.checked = !input.checked;
+                }
+            });
+        });
+
+        function checkAnswer(questionNum, correctAnswers) {
+            if (answeredQuestions.has(questionNum)) return;
+
+            const question = document.querySelector(`[data-question="${questionNum}"]`);
+            const options = question.querySelectorAll('.option');
+            const feedback = question.querySelector('.feedback');
+            const checkButton = question.querySelector('.check-button');
+            
+            // Get selected answers
+            let selectedAnswers = [];
+            if (questionNum === 2 || questionNum === 10) {
+                selectedAnswers = Array.from(question.querySelectorAll('input[type="checkbox"]:checked'))
+                    .map(input => input.value).sort();
+            } else {
+                const selected = question.querySelector('input[type="radio"]:checked');
+                if (selected) selectedAnswers = [selected.value];
+            }
+
+            if (selectedAnswers.length === 0) {
+                alert('Vui lòng chọn đáp án!');
+                return;
+            }
+
+            // Check if answer is correct
+            const isCorrect = JSON.stringify(selectedAnswers.sort()) === JSON.stringify(correctAnswers.sort());
+            
+            // Mark all options
+            options.forEach(option => {
+                const value = option.dataset.value;
+                option.classList.add('disabled');
+                
+                if (correctAnswers.includes(value)) {
+                    option.classList.add('correct');
+                } else if (selectedAnswers.includes(value)) {
+                    option.classList.add('wrong');
+                }
+            });
+
+            // Show feedback
+            if (isCorrect) {
+                feedback.className = 'feedback show correct';
+                feedback.innerHTML = '<span class="feedback-icon">✅</span> Chính xác! Đáp án đúng.';
+                question.classList.add('answered-correct');
+                score++;
+            } else {
+                feedback.className = 'feedback show wrong';
+                feedback.innerHTML = `<span class="feedback-icon">❌</span> Sai rồi! Đáp án đúng là: ${correctAnswers.join(', ')}`;
+                question.classList.add('answered-wrong');
+            }
+
+            // Disable button and mark as answered
+            checkButton.disabled = true;
+            answeredQuestions.add(questionNum);
+            
+            // Update score
+            updateScore();
+        }
+
+        function updateScore() {
+            document.getElementById('scoreDisplay').textContent = `${score}/10`;
+        }
+
+        function resetQuiz() {
+            if (!confirm('Bạn có chắc muốn làm lại từ đầu?')) return;
+            
+            score = 0;
+            answeredQuestions.clear();
+            updateScore();
+
+            document.querySelectorAll('.question').forEach(question => {
+                question.className = 'question';
+                
+                question.querySelectorAll('.option').forEach(option => {
+                    option.className = 'option';
+                    const input = option.querySelector('input');
+                    input.checked = false;
+                });
+
+                const feedback = question.querySelector('.feedback');
+                feedback.className = 'feedback';
+                feedback.innerHTML = '';
+
+                const button = question.querySelector('.check-button');
+                button.disabled = false;
+            });
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

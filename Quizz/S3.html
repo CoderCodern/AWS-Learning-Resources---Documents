@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS DVA Storage Practice Quiz</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #232526 0%, #414345 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #FF9900;
+        }
+        
+        h1 {
+            color: #232F3E;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .aws-logo {
+            color: #FF9900;
+            font-weight: bold;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 1.2em;
+            margin-top: 10px;
+        }
+        
+        .quiz-info {
+            background: linear-gradient(135deg, #232F3E 0%, #FF9900 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 1.1em;
+        }
+        
+        .question-card {
+            background: #f8f9fa;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-radius: 15px;
+            border-left: 5px solid #FF9900;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .question-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .question-number {
+            color: #232F3E;
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .topic-badge {
+            background: #FF9900;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: normal;
+        }
+        
+        .question-text {
+            font-size: 1.1em;
+            margin-bottom: 20px;
+            color: #333;
+            line-height: 1.8;
+            font-weight: 500;
+        }
+        
+        .options {
+            margin-left: 10px;
+        }
+        
+        .option {
+            margin: 12px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid #e0e0e0;
+        }
+        
+        .option:hover {
+            border-color: #FF9900;
+            transform: translateX(5px);
+            box-shadow: 0 2px 8px rgba(255, 153, 0, 0.2);
+        }
+        
+        .option input[type="radio"] {
+            margin-right: 12px;
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+        }
+        
+        .option label {
+            cursor: pointer;
+            display: inline-block;
+            width: calc(100% - 30px);
+            line-height: 1.6;
+        }
+        
+        .submit-btn {
+            background: linear-gradient(135deg, #232F3E 0%, #FF9900 100%);
+            color: white;
+            border: none;
+            padding: 18px 50px;
+            font-size: 1.3em;
+            border-radius: 50px;
+            cursor: pointer;
+            display: block;
+            margin: 40px auto;
+            transition: all 0.3s;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .submit-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+        }
+        
+        .result {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            background: linear-gradient(135deg, #232F3E 0%, #FF9900 100%);
+            color: white;
+            border-radius: 15px;
+            margin-top: 30px;
+            font-size: 1.5em;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .result-score {
+            font-size: 3em;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        
+        .correct {
+            border-color: #28a745 !important;
+            background: #d4edda !important;
+        }
+        
+        .incorrect {
+            border-color: #dc3545 !important;
+            background: #f8d7da !important;
+        }
+        
+        .explanation {
+            display: none;
+            margin-top: 15px;
+            padding: 20px;
+            background: #e7f3ff;
+            border-radius: 8px;
+            color: #004085;
+            border-left: 4px solid #004085;
+            line-height: 1.8;
+        }
+        
+        .explanation strong {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            color: #003060;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><span class="aws-logo">AWS</span> DVA-C02 Practice Quiz</h1>
+            <p class="subtitle">S3, EFS, EBS & Instance Store Storage</p>
+        </div>
+        
+        <div class="quiz-info">
+            <strong>📝 Total Questions: 20</strong> | AWS Certified Developer Associate Exam Practice
+        </div>
+
+        <form id="quizForm">
+            <!-- Question 1 -->
+            <div class="question-card">
+                <div class="question-number">Question 1 <span class="topic-badge">S3</span></div>
+                <div class="question-text">A company needs to store application logs that will be accessed frequently for the first 30 days and then archived. The logs must be retained for 7 years for compliance purposes. Which S3 storage configuration is MOST cost-effective?</div>
+                <div class="options">
+                    <div class="option">
+                        <input type="radio" name="q1" id="q1a" value="a">
+                        <label for="q1a">A. Store in S3 Standard and use lifecycle policy to transition to S3 Standard-IA after 30 days</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q1" id="q1b" value="b">
+                        <label for="q1b">B. Store in S3 Standard and use lifecycle policy to transition to S3 Glacier Flexible Retrieval after 30 days</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q1" id="q1c" value="c">
+                        <label for="q1c">C. Store in S3 Intelligent-Tiering for the entire 7 years</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q1" id="q1d" value="d">
+                        <label for="q1d">D. Store in S3 One Zone-IA for the entire 7 years</label>
+                    </div>
+                </div>
+                <div class="explanation" id="exp1">
+                    <strong>Correct Answer: B</strong>
+                    After the frequent access period (30 days), transitioning to S3 Glacier Flexible Retrieval provides the most cost-effective long-term archival solution while meeting compliance requirements. S3 Standard is best for the first 30 days of frequent access.
+                </div>
+            </div>
+
+            <!-- Question 2 -->
+            <div class="question-card">
+                <div class="question-number">Question 2 <span class="topic-badge">EBS</span></div>
+                <div class="question-text">A developer needs to create an EBS volume for a production database that requires consistent IOPS performance of 15,000 IOPS. Which EBS volume type should be used?</div>
+                <div class="options">
+                    <div class="option">
+                        <input type="radio" name="q2" id="q2a" value="a">
+                        <label for="q2a">A. General Purpose SSD (gp3)</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q2" id="q2b" value="b">
+                        <label for="q2b">B. Provisioned IOPS SSD (io2)</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q2" id="q2c" value="c">
+                        <label for="q2c">C. Throughput Optimized HDD (st1)</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q2" id="q2d" value="d">
+                        <label for="q2d">D. Cold HDD (sc1)</label>
+                    </div>
+                </div>
+                <div class="explanation" id="exp2">
+                    <strong>Correct Answer: B</strong>
+                    Provisioned IOPS SSD (io2) volumes are designed for mission-critical applications requiring sustained IOPS performance and low latency, making them ideal for production databases with high IOPS requirements.
+                </div>
+            </div>
+
+            <!-- Question 3 -->
+            <div class="question-card">
+                <div class="question-number">Question 3 <span class="topic-badge">EFS</span></div>
+                <div class="question-text">A developer is designing a solution where multiple EC2 instances across different Availability Zones need to share the same file system concurrently. Which AWS storage service should be used?</div>
+                <div class="options">
+                    <div class="option">
+                        <input type="radio" name="q3" id="q3a" value="a">
+                        <label for="q3a">A. Amazon EBS with Multi-Attach enabled</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q3" id="q3b" value="b">
+                        <label for="q3b">B. Amazon EFS</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q3" id="q3c" value="c">
+                        <label for="q3c">C. Amazon S3</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q3" id="q3d" value="d">
+                        <label for="q3d">D. Instance Store</label>
+                    </div>
+                </div>
+                <div class="explanation" id="exp3">
+                    <strong>Correct Answer: B</strong>
+                    Amazon EFS is a fully managed NFS file system that can be mounted concurrently by hundreds or thousands of EC2 instances across multiple Availability Zones, making it perfect for shared file system scenarios.
+                </div>
+            </div>
+
+            <!-- Question 4 -->
+            <div class="question-card">
+                <div class="question-number">Question 4 <span class="topic-badge">Instance Store</span></div>
+                <div class="question-text">A developer needs temporary block-level storage with the highest IOPS for caching data. The data can be lost if the instance stops. Which storage option is MOST appropriate?</div>
+                <div class="options">
+                    <div class="option">
+                        <input type="radio" name="q4" id="q4a" value="a">
+                        <label for="q4a">A. Amazon EBS gp3 volume</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q4" id="q4b" value="b">
+                        <label for="q4b">B. Amazon EBS io2 volume</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q4" id="q4c" value="c">
+                        <label for="q4c">C. Instance Store</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q4" id="q4d" value="d">
+                        <label for="q4d">D. Amazon EFS</label>
+                    </div>
+                </div>
+                <div class="explanation" id="exp4">
+                    <strong>Correct Answer: C</strong>
+                    Instance Store provides the highest IOPS performance and is ideal for temporary storage like buffers, caches, and scratch data. Data is lost when the instance stops or terminates, which is acceptable for this use case.
+                </div>
+            </div>
+
+            <!-- Question 5 -->
+            <div class="question-card">
+                <div class="question-number">Question 5 <span class="topic-badge">S3</span></div>
+                <div class="question-text">An application uploads files up to 500 GB to S3. Which upload method should be used for optimal performance and reliability?</div>
+                <div class="options">
+                    <div class="option">
+                        <input type="radio" name="q5" id="q5a" value="a">
+                        <label for="q5a">A. Single PUT operation</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q5" id="q5b" value="b">
+                        <label for="q5b">B. Multipart upload</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q5" id="q5c" value="c">
+                        <label for="q5c">C. S3 Transfer Acceleration only</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q5" id="q5d" value="d">
+                        <label for="q5d">D. AWS Snowball</label>
+                    </div>
+                </div>
+                <div class="explanation" id="exp5">
+                    <strong>Correct Answer: B</strong>
+                    Multipart upload is recommended for objects larger than 100 MB and required for objects larger than 5 GB. It improves performance through parallel uploads and provides better error recovery.
+                </div>
+            </div>
+
+            <!-- Question 6 -->
+            <div class="question-card">
+                <div class="question-number">Question 6 <span class="topic-badge">EBS</span></div>
+                <div class="question-text">A developer launched an EC2 instance in us-east-1a with an attached EBS volume. The instance needs to be moved to us-east-1b. What is the correct approach?</div>
+                <div class="options">
+                    <div class="option">
+                        <input type="radio" name="q6" id="q6a" value="a">
+                        <label for="q6a">A. Detach the EBS volume and attach it to an instance in us-east-1b</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q6" id="q6b" value="b">
+                        <label for="q6b">B. Create a snapshot of the EBS volume, create a new volume from the snapshot in us-east-1b, and attach it to an instance</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q6" id="q6c" value="c">
+                        <label for="q6c">C. Stop the instance and AWS will automatically move it to us-east-1b</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q6" id="q6d" value="d">
+                        <label for="q6d">D. Use AWS DataSync to copy the volume</label>
+                    </div>
+                </div>
+                <div class="explanation" id="exp6">
+                    <strong>Correct Answer: B</strong>
+                    EBS volumes are locked to an Availability Zone. To move to a different AZ, you must create a snapshot of the volume and then create a new volume from that snapshot in the target AZ.
+                </div>
+            </div>
+
+            <!-- Question 7 -->
+            <div class="question-card">
+                <div class="question-number">Question 7 <span class="topic-badge">S3</span></div>
+                <div class="question-text">A company requires that all objects in an S3 bucket be replicated to another bucket in a different region for disaster recovery. What must be enabled on both buckets?</div>
+                <div class="options">
+                    <div class="option">
+                        <input type="radio" name="q7" id="q7a" value="a">
+                        <label for="q7a">A. Server-side encryption</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q7" id="q7b" value="b">
+                        <label for="q7b">B. Versioning</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q7" id="q7c" value="c">
+                        <label for="q7c">C. MFA Delete</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q7" id="q7d" value="d">
+                        <label for="q7d">D. Transfer Acceleration</label>
+                    </div>
+                </div>
+                <div class="explanation" id="exp7">
+                    <strong>Correct Answer: B</strong>
+                    S3 Cross-Region Replication (CRR) requires versioning to be enabled on both the source and destination buckets. This allows S3 to track and replicate object versions.
+                </div>
+            </div>
+
+            <!-- Question 8 -->
+            <div class="question-card">
+                <div class="question-number">Question 8 <span class="topic-badge">EFS</span></div>
+                <div class="question-text">An application stores user-uploaded files that are accessed frequently for the first week, then rarely accessed afterwards. Which EFS configuration provides the best cost optimization?</div>
+                <div class="options">
+                    <div class="option">
+                        <input type="radio" name="q8" id="q8a" value="a">
+                        <label for="q8a">A. EFS Standard storage class only</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q8" id="q8b" value="b">
+                        <label for="q8b">B. EFS Infrequent Access storage class only</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q8" id="q8c" value="c">
+                        <label for="q8c">C. EFS with Lifecycle Management to automatically move files to IA after 7 days</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q8" id="q8d" value="d">
+                        <label for="q8d">D. EFS with Provisioned Throughput mode</label>
+                    </div>
+                </div>
+                <div class="explanation" id="exp8">
+                    <strong>Correct Answer: C</strong>
+                    EFS Lifecycle Management can automatically transition files to the Infrequent Access (IA) storage class after a specified period (e.g., 7 days), providing significant cost savings for files that are rarely accessed.
+                </div>
+            </div>
+
+            <!-- Question 9 -->
+            <div class="question-card">
+                <div class="question-number">Question 9 <span class="topic-badge">EBS</span></div>
+                <div class="question-text">A database application requires a volume that can deliver up to 64,000 IOPS. Which EBS volume type supports this requirement?</div>
+                <div class="options">
+                    <div class="option">
+                        <input type="radio" name="q9" id="q9a" value="a">
+                        <label for="q9a">A. gp3 (General Purpose SSD)</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q9" id="q9b" value="b">
+                        <label for="q9b">B. io2 Block Express</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q9" id="q9c" value="c">
+                        <label for="q9c">C. st1 (Throughput Optimized HDD)</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q9" id="q9d" value="d">
+                        <label for="q9d">D. sc1 (Cold HDD)</label>
+                    </div>
+                </div>
+                <div class="explanation" id="exp9">
+                    <strong>Correct Answer: B</strong>
+                    io2 Block Express volumes can deliver up to 256,000 IOPS and 4,000 MiB/s throughput, making them suitable for the most demanding database workloads requiring 64,000 IOPS.
+                </div>
+            </div>
+
+            <!-- Question 10 -->
+            <div class="question-card">
+                <div class="question-number">Question 10 <span class="topic-badge">S3</span></div>
+                <div class="question-text">A developer needs to ensure that objects in an S3 bucket cannot be deleted or overwritten for a period of 5 years for regulatory compliance. Which S3 feature should be used?</div>
+                <div class="options">
+                    <div class="option">
+                        <input type="radio" name="q10" id="q10a" value="a">
+                        <label for="q10a">A. S3 Versioning with MFA Delete</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q10" id="q10b" value="b">
+                        <label for="q10b">B. S3 Object Lock in Compliance mode</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q10" id="q10c" value="c">
+                        <label for="q10c">C. S3 Bucket Policy with Deny statements</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q10" id="q10d" value="d">
+                        <label for="q10d">D. S3 Glacier Vault Lock</label>
+                    </div>
+                </div>
+                <div class="explanation" id="exp10">
+                    <strong>Correct Answer: B</strong>
+                    S3 Object Lock in Compliance mode prevents objects from being deleted or overwritten for a specified retention period. Not even the root user can delete protected objects during the retention period.
+                </div>
+            </div>
+
+            <!-- Question 11 -->
+            <div class="question-card">
+                <div class="question-number">Question 11 <span class="topic-badge">Instance Store</span></div>
+                <div class="question-text">What happens to data stored on Instance Store volumes when an EC2 instance is stopped?</div>
+                <div class="options">
+                    <div class="option">
+                        <input type="radio" name="q11" id="q11a" value="a">
+                        <label for="q11a">A. Data persists and is available when the instance is started again</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q11" id="q11b" value="b">
+                        <label for="q11b">B. Data is automatically backed up to S3</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q11" id="q11c" value="c">
+                        <label for="q11c">C. Data is lost permanently</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q11" id="q11d" value="d">
+                        <label for="q11d">D. Data is moved to EBS volumes</label>
+                    </div>
+                </div>
+                <div class="explanation" id="exp11">
+                    <strong>Correct Answer: C</strong>
+                    Instance Store volumes are ephemeral storage. Data is lost when the instance is stopped, terminated, or if the underlying hardware fails. Only data on EBS volumes persists.
+                </div>
+            </div>
+
+            <!-- Question 12 -->
+            <div class="question-card">
+                <div class="question-number">Question 12 <span class="topic-badge">EBS</span></div>
+                <div class="question-text">A company needs to share an EBS volume between two EC2 instances in the same Availability Zone for a clustered application. Which solution should be used?</div>
+                <div class="options">
+                    <div class="option">
+                        <input type="radio" name="q12" id="q12a" value="a">
+                        <label for="q12a">A. Use EBS Multi-Attach with io1 or io2 volumes</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q12" id="q12b" value="b">
+                        <label for="q12b">B. Use EBS Multi-Attach with gp3 volumes</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q12" id="q12c" value="c">
+                        <label for="q12c">C. Detach and reattach the volume as needed</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q12" id="q12d" value="d">
+                        <label for="q12d">D. Use EFS instead of EBS</label>
+                    </div>
+                </div>
+                <div class="explanation" id="exp12">
+                    <strong>Correct Answer: A</strong>
+                    EBS Multi-Attach allows a single Provisioned IOPS SSD (io1 or io2) volume to be attached to multiple EC2 instances within the same Availability Zone, enabling shared access for clustered applications.
+                </div>
+            </div>
+
+            <!-- Question 13 -->
+            <div class="question-card">
+                <div class="question-number">Question 13 <span class="topic-badge">S3</span></div>
+                <div class="question-text">An application generates millions of small log files daily that need to be stored in S3. The files are accessed randomly but infrequently. Which S3 storage class is MOST cost-effective?</div>
+                <div class="options">
+                    <div class="option">
+                        <input type="radio" name="q13" id="q13a" value="a">
+                        <label for="q13a">A. S3 Standard</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q13" id="q13b" value="b">
+                        <label for="q13b">B. S3 Standard-IA</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q13" id="q13c" value="c">
+                        <label for="q13c">C. S3 Intelligent-Tiering</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q13" id="q13d" value="d">
+                        <label for="q13d">D. S3 One Zone-IA</label>
+                    </div>
+                </div>
+                <div class="explanation" id="exp13">
+                    <strong>Correct Answer: C</strong>
+                    S3 Intelligent-Tiering automatically moves objects between access tiers based on access patterns, making it ideal for data with unpredictable access patterns. It has no retrieval fees and monitors access patterns for optimization.
+                </div>
+            </div>
+
+            <!-- Question 14 -->
+            <div class="question-card">
+                <div class="question-number">Question 14 <span class="topic-badge">EFS</span></div>
+                <div class="question-text">A company needs a file system that can scale to petabytes and be accessed from multiple VPCs in different regions. Which solution meets these requirements?</div>
+                <div class="options">
+                    <div class="option">
+                        <input type="radio" name="q14" id="q14a" value="a">
+                        <label for="q14a">A. EFS with VPC peering connections</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q14" id="q14b" value="b">
+                        <label for="q14b">B. EBS with snapshots copied across regions</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q14" id="q14c" value="c">
+                        <label for="q14c">C. S3 with cross-region replication</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q14" id="q14d" value="d">
+                        <label for="q14d">D. Multiple EFS file systems with AWS DataSync</label>
+                    </div>
+                </div>
+                <div class="explanation" id="exp14">
+                    <strong>Correct Answer: A</strong>
+                    EFS can be accessed from multiple VPCs using VPC peering, AWS Transit Gateway, or VPN connections. EFS scales automatically to petabytes without provisioning.
+                </div>
+            </div>
+
+            <!-- Question 15 -->
+            <div class="question-card">
+                <div class="question-number">Question 15 <span class="topic-badge">S3</span></div>
+                <div class="question-text">Which S3 feature provides the lowest latency access for frequently accessed data while automatically optimizing costs for data that becomes less frequently accessed?</div>
+                <div class="options">
+                    <div class="option">
+                        <input type="radio" name="q15" id="q15a" value="a">
+                        <label for="q15a">A. S3 Standard with lifecycle policies</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q15" id="q15b" value="b">
+                        <label for="q15b">B. S3 Intelligent-Tiering</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q15" id="q15c" value="c">
+                        <label for="q15c">C. S3 Standard-IA</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q15" id="q15d" value="d">
+                        <label for="q15d">D. S3 Glacier with expedited retrieval</label>
+                    </div>
+                </div>
+                <div class="explanation" id="exp15">
+                    <strong>Correct Answer: B</strong>
+                    S3 Intelligent-Tiering automatically moves objects between frequent and infrequent access tiers based on changing access patterns, providing millisecond latency and automatic cost optimization without retrieval fees.
+                </div>
+            </div>
+
+            <!-- Question 16 -->
+            <div class="question-card">
+                <div class="question-number">Question 16 <span class="topic-badge">EBS</span></div>
+                <div class="question-text">Where are EBS snapshots stored?</div>
+                <div class="options">
+                    <div class="option">
+                        <input type="radio" name="q16" id="q16a" value="a">
+                        <label for="q16a">A. On the EBS volume itself</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q16" id="q16b" value="b">
+                        <label for="q16b">B. On Amazon S3</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q16" id="q16c" value="c">
+                        <label for="q16c">C. On Amazon EFS</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q16" id="q16d" value="d">
+                        <label for="q16d">D. On Amazon Glacier</label>
+                    </div>
+                </div>
+                <div class="explanation" id="exp16">
+                    <strong>Correct Answer: B</strong>
+                    EBS snapshots are stored in Amazon S3 (though you cannot access them directly in your S3 console). They are incremental backups and are regionally scoped.
+                </div>
+            </div>
+
+            <!-- Question 17 -->
+            <div class="question-card">
+                <div class="question-number">Question 17 <span class="topic-badge">Instance Store</span></div>
+                <div class="question-text">Which statement about Instance Store volumes is correct?</div>
+                <div class="options">
+                    <div class="option">
+                        <input type="radio" name="q17" id="q17a" value="a">
+                        <label for="q17a">A. Instance Store volumes can be attached to a stopped instance</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q17" id="q17b" value="b">
+                        <label for="q17b">B. Instance Store volumes can be detached and attached to another instance</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q17" id="q17c" value="c">
+                        <label for="q17c">C. Instance Store volumes are physically attached to the host computer</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q17" id="q17d" value="d">
+                        <label for="q17d">D. Instance Store volumes persist when the instance is rebooted</label>
+                    </div>
+                </div>
+                <div class="explanation" id="exp17">
+                    <strong>Correct Answer: C and D (both are correct)</strong>
+                    Instance Store volumes are physically attached to the host computer running the EC2 instance, providing very high performance. Data persists during reboots but is lost on stop/terminate.
+                </div>
+            </div>
+
+            <!-- Question 18 -->
+            <div class="question-card">
+                <div class="question-number">Question 18 <span class="topic-badge">S3</span></div>
+                <div class="question-text">A developer needs to allow public read access to specific objects in an S3 bucket while keeping other objects private. What is the MOST secure approach?</div>
+                <div class="options">
+                    <div class="option">
+                        <input type="radio" name="q18" id="q18a" value="a">
+                        <label for="q18a">A. Make the entire bucket public</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q18" id="q18b" value="b">
+                        <label for="q18b">B. Use object-level ACLs for specific objects</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q18" id="q18c" value="c">
+                        <label for="q18c">C. Use pre-signed URLs for all objects</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q18" id="q18d" value="d">
+                        <label for="q18d">D. Disable Block Public Access at bucket level</label>
+                    </div>
+                </div>
+                <div class="explanation" id="exp18">
+                    <strong>Correct Answer: B</strong>
+                    Using object-level ACLs allows granular control over which specific objects are publicly accessible while keeping others private, without exposing the entire bucket.
+                </div>
+            </div>
+
+            <!-- Question 19 -->
+            <div class="question-card">
+                <div class="question-number">Question 19 <span class="topic-badge">EBS</span></div>
+                <div class="question-text">A company wants to optimize costs for EBS volumes that are used for development and testing. The instances run only during business hours (8 hours per day). What is the MOST cost-effective approach?</div>
+                <div class="options">
+                    <div class="option">
+                        <input type="radio" name="q19" id="q19a" value="a">
+                        <label for="q19a">A. Use Instance Store instead of EBS</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q19" id="q19b" value="b">
+                        <label for="q19b">B. Create snapshots of EBS volumes, delete the volumes, and restore them when needed</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q19" id="q19c" value="c">
+                        <label for="q19c">C. Keep EBS volumes attached but stop the instances during off-hours</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q19" id="q19d" value="d">
+                        <label for="q19d">D. Use S3 instead of EBS volumes</label>
+                    </div>
+                </div>
+                <div class="explanation" id="exp19">
+                    <strong>Correct Answer: B</strong>
+                    Creating snapshots and deleting volumes when not in use is most cost-effective. Snapshots are cheaper than keeping volumes provisioned. You only pay for the compressed snapshot storage, not the full volume size.
+                </div>
+            </div>
+
+            <!-- Question 20 -->
+            <div class="question-card">
+                <div class="question-number">Question 20 <span class="topic-badge">EFS</span></div>
+                <div class="question-text">An application running on EC2 instances requires a POSIX-compliant file system that supports concurrent access from thousands of instances. Which storage service should be used?</div>
+                <div class="options">
+                    <div class="option">
+                        <input type="radio" name="q20" id="q20a" value="a">
+                        <label for="q20a">A. Amazon S3</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q20" id="q20b" value="b">
+                        <label for="q20b">B. Amazon EBS with Multi-Attach</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q20" id="q20c" value="c">
+                        <label for="q20c">C. Amazon EFS</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="q20" id="q20d" value="d">
+                        <label for="q20d">D. Instance Store</label>
+                    </div>
+                </div>
+                <div class="explanation" id="exp20">
+                    <strong>Correct Answer: C</strong>
+                    Amazon EFS is a fully managed, POSIX-compliant file system that can be concurrently accessed by thousands of EC2 instances across multiple Availability Zones using standard file system semantics.
+                </div>
+            </div>
+
+            <button type="button" class="submit-btn" onclick="submitQuiz()">Submit Quiz</button>
+        </form>
+
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        const answers = {
+            q1: 'b', q2: 'b', q3: 'b', q4: 'c', q5: 'b',
+            q6: 'b', q7: 'b', q8: 'c', q9: 'b', q10: 'b',
+            q11: 'c', q12: 'a', q13: 'c', q14: 'a', q15: 'b',
+            q16: 'b', q17: 'c', q18: 'b', q19: 'b', q20: 'c'
+        };
+
+        function submitQuiz() {
+            let score = 0;
+            let answered = 0;
+            const total = Object.keys(answers).length;
+
+            for (let i = 1; i <= total; i++) {
+                const questionName = `q${i}`;
+                const selected = document.querySelector(`input[name="${questionName}"]:checked`);
+                const explanation = document.getElementById(`exp${i}`);
+                
+                if (selected) {
+                    answered++;
+                    const parentOption = selected.closest('.option');
+                    
+                    if (selected.value === answers[questionName]) {
+                        score++;
+                        parentOption.classList.add('correct');
+                    } else {
+                        parentOption.classList.add('incorrect');
+                        // Highlight correct answer
+                        const correctOption = document.querySelector(`input[name="${questionName}"][value="${answers[questionName]}"]`).closest('.option');
+                        correctOption.classList.add('correct');
+                    }
+                    
+                    explanation.style.display = 'block';
+                }
+            }
+
+            if (answered < total) {
+                alert(`Please answer all questions. You have answered ${answered} out of ${total} questions.`);
+                return;
+            }
+
+            const percentage = ((score / total) * 100).toFixed(1);
+            const resultDiv = document.getElementById('result');
+            
+            let message = '';
+            let emoji = '';
+            
+            if (percentage >= 90) {
+                message = 'Outstanding! 🌟';
+                emoji = '🎉';
+            } else if (percentage >= 80) {
+                message = 'Excellent work!';
+                emoji = '👏';
+            } else if (percentage >= 70) {
+                message = 'Good job!';
+                emoji = '👍';
+            } else if (percentage >= 60) {
+                message = 'Keep practicing!';
+                emoji = '📚';
+            } else {
+                message = 'Review the material and try again!';
+                emoji = '💪';
+            }
+
+            resultDiv.innerHTML = `
+                <div>${emoji}</div>
+                <div class="result-score">${score}/${total}</div>
+                <div>${message}</div>
+                <div style="font-size: 0.8em; margin-top: 15px;">Percentage: ${percentage}%</div>
+                <div style="font-size: 0.9em; margin-top: 20px;">
+                    ${percentage >= 70 ? 'You\'re ready for the AWS DVA exam!' : 'Review the explanations and study more.'}
+                </div>
+            `;
+            
+            resultDiv.style.display = 'block';
+            resultDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    </script>
+</body>
+</html>

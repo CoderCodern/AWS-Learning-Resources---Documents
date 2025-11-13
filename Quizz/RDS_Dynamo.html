@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS Quiz - RDS/EC2/DynamoDB</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        .progress {
+            background: #e0e0e0;
+            height: 8px;
+            border-radius: 10px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .quiz-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+        
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .question-number {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        
+        .section-badge {
+            background: #f0f0f0;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            color: #666;
+        }
+        
+        .question-text {
+            font-size: 1.05em;
+            color: #333;
+            line-height: 1.7;
+            margin-bottom: 25px;
+        }
+        
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .option {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .option:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .option input[type="radio"] {
+            margin-right: 12px;
+            margin-top: 3px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        
+        .option span {
+            line-height: 1.5;
+        }
+        
+        .option.selected {
+            background: #e7f3ff;
+            border-color: #667eea;
+        }
+        
+        .option.correct {
+            background: #d4edda;
+            border-color: #28a745;
+        }
+        
+        .option.incorrect {
+            background: #f8d7da;
+            border-color: #dc3545;
+        }
+        
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .explanation {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #ffc107;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .explanation.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .explanation h3 {
+            color: #856404;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .explanation p {
+            color: #856404;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+        
+        .next-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            width: 100%;
+            display: none;
+        }
+        
+        .next-btn.show {
+            display: block;
+        }
+        
+        .next-btn:hover {
+            background: #218838;
+        }
+        
+        .score-summary {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            display: none;
+        }
+        
+        .score-summary.show {
+            display: block;
+        }
+        
+        .score-number {
+            font-size: 4em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 20px 0;
+        }
+        
+        .restart-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 AWS Solutions Architect Quiz</h1>
+            <p>RDS / EC2 / ElastiCache / API Gateway / DynamoDB</p>
+            <div class="progress">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+        </div>
+        
+        <div id="quizContainer"></div>
+        
+        <div class="score-summary quiz-card" id="scoreSummary">
+            <h2>🎉 Quiz Complete!</h2>
+            <div class="score-number" id="finalScore">0/0</div>
+            <p style="font-size: 1.2em; color: #666;">You have completed the quiz!</p>
+            <button class="restart-btn" onclick="restartQuiz()">🔄 Restart Quiz</button>
+        </div>
+    </div>
+
+    <script>
+        const quizData = [
+            {
+                section: "AWS RDS / EC2 / ELB",
+                question: "A company has an RDS MySQL database and EC2 web tier in a single Availability Zone in the US region. The company wants to increase availability while remaining cost-effective and serving only US-based users. What is the most resource-efficient solution?",
+                options: [
+                    "Deploy EC2 web-tier across 2 AZs behind an ELB and enable RDS MySQL Multi-AZ",
+                    "Migrate to Aurora Global Database",
+                    "Deploy multi-region architecture with RDS cross-region replication",
+                    "Only enable RDS Multi-AZ, keep EC2 in single AZ"
+                ],
+                correct: 0,
+                explanation: "Multi-AZ enables RDS to have a standby database for automatic failover. ELB with EC2 across multiple AZs ensures the web-tier remains available. Multi-region solutions are more expensive and unnecessary for US-only users."
+            },
+            {
+                section: "AWS RDS",
+                question: "A company has an RDS PostgreSQL database with a read-heavy workload. What is the most effective solution to optimize read performance?",
+                options: [
+                    "Use ElastiCache with Write-Through strategy",
+                    "Create Read Replicas and configure the application to read from the replica endpoint",
+                    "Use ElastiCache with Lazy Loading strategy",
+                    "Enable RDS Multi-AZ"
+                ],
+                correct: 1,
+                explanation: "Read Replicas are specifically designed for read-heavy workloads. ElastiCache requires more complex application logic changes. Multi-AZ only provides high availability, not improved read performance."
+            },
+            {
+                section: "API Gateway / Lambda / RDS",
+                question: "An application using API Gateway and Lambda is experiencing 'too many connections' errors when connecting to RDS MySQL. What is the best solution?",
+                options: [
+                    "Increase max_connections parameter in RDS",
+                    "Use RDS Proxy to manage and share connection pools",
+                    "Migrate to Aurora Serverless",
+                    "Add Read Replicas"
+                ],
+                correct: 1,
+                explanation: "Lambda creates many short-lived connections which can overwhelm RDS. RDS Proxy pools and shares connections, improving performance without downtime. Other options don't address the root cause of connection pooling."
+            },
+            {
+                section: "ElastiCache",
+                question: "A company needs to cache frequently accessed user data. The solution should be intelligent about what to cache and can tolerate data being up to 1 minute old. What caching strategy should be used?",
+                options: [
+                    "Write-Through",
+                    "Lazy Loading with TTL",
+                    "Write-Through with TTL",
+                    "Lazy Loading without TTL"
+                ],
+                correct: 1,
+                explanation: "Lazy Loading only caches data when requested (cache miss → fetch from DB → write to cache). TTL ensures data doesn't become too stale. Write-Through caches all data including rarely used items, consuming more resources."
+            },
+            {
+                section: "AWS RDS",
+                question: "An RDS MySQL database is at risk of running out of storage. What is the solution requiring the least operational effort to automatically scale storage?",
+                options: [
+                    "Enable Storage Auto-Scaling for RDS MySQL",
+                    "Create CloudWatch alarm with Lambda to resize storage",
+                    "Migrate to a larger EBS volume manually",
+                    "Migrate to Aurora"
+                ],
+                correct: 0,
+                explanation: "AWS automatically expands storage when it's nearly full. No migration or complex configuration needed. While Aurora also has auto-scaling, migration is more complex and not the least effort solution."
+            },
+            {
+                section: "DynamoDB",
+                question: "A DynamoDB table needs to support queries by: (name + version), by category, and by name alone. What is the most efficient design?",
+                options: [
+                    "PK = name, SK = category → GSI (version)",
+                    "PK = category, SK = name → GSI (version)",
+                    "PK = version, SK = name → GSI (category)",
+                    "PK = name, SK = version → GSI (category)"
+                ],
+                correct: 3,
+                explanation: "Query by (name, version) uses the primary key directly. Query by name scans the partition key. Query by category uses the GSI. This is the most efficient design for all three query patterns."
+            },
+            {
+                section: "DynamoDB",
+                question: "A DynamoDB table stores session data that should be automatically deleted after 1 week. What is the best solution?",
+                options: [
+                    "Use Lambda with EventBridge scheduled rule",
+                    "Use TTL (Time To Live)",
+                    "Use DynamoDB Streams with Lambda",
+                    "Use DAX"
+                ],
+                correct: 1,
+                explanation: "DynamoDB automatically deletes items when TTL expires. No need for Lambda, Streams, or DAX. This is the native and most efficient solution."
+            },
+            {
+                section: "DynamoDB / Lambda / IAM",
+                question: "A Lambda function needs to perform upsert operations (create new or update existing items) on DynamoDB. What are the minimum required permissions?",
+                options: [
+                    "dynamodb:UpdateItem and dynamodb:GetItem",
+                    "dynamodb:PutItem and dynamodb:GetItem",
+                    "dynamodb:PutItem and dynamodb:UpdateItem",
+                    "Only dynamodb:PutItem"
+                ],
+                correct: 0,
+                explanation: "UpdateItem can create a new item if it doesn't exist (upsert functionality). PutItem is not needed separately, providing least privilege access. GetItem may be needed for conditional updates."
+            },
+            {
+                section: "DynamoDB Transactions",
+                question: "An application needs to update two DynamoDB tables in a single transaction with all-or-nothing semantics. What should be used?",
+                options: [
+                    "Use BatchWriteItem API",
+                    "Use TransactWriteItems API",
+                    "Use two sequential UpdateItem calls",
+                    "Use DynamoDB Streams"
+                ],
+                correct: 1,
+                explanation: "DynamoDB Transactions guarantee atomicity (all or nothing). BatchWriteItem does not provide transactional guarantees and operations may partially succeed."
+            },
+            {
+                section: "DynamoDB Capacity",
+                question: "An application makes 10 strongly consistent reads per second, each reading 6 KB of data. How many RCUs (Read Capacity Units) are required?",
+                options: [
+                    "10 RCU",
+                    "60 RCU",
+                    "20 RCU",
+                    "30 RCU"
+                ],
+                correct: 2,
+                explanation: "1 RCU = 4KB strongly consistent read per second. 6KB requires 2 RCUs per read (rounded up). 10 reads/s × 2 RCUs = 20 RCUs total."
+            },
+            {
+                section: "DynamoDB / VPC",
+                question: "EC2 instances need to communicate with DynamoDB without traversing the internet. What is the best solution?",
+                options: [
+                    "Create a VPC Endpoint for DynamoDB",
+                    "Use NAT Gateway",
+                    "Use Internet Gateway with Security Groups",
+                    "Use VPN"
+                ],
+                correct: 0,
+                explanation: "VPC Endpoint allows private communication over AWS backbone network. No need for Internet Gateway, NAT, or VPN. This is the most secure and cost-effective solution."
+            },
+            {
+                section: "DynamoDB Indexes",
+                question: "A DynamoDB table needs to support queries by both the primary key and an alternate key. The alternate index must be created at table creation time. What should be used?",
+                options: [
+                    "Create a GSI (Global Secondary Index)",
+                    "Create a second table",
+                    "Use Scan with FilterExpression",
+                    "Create an LSI (Local Secondary Index)"
+                ],
+                correct: 3,
+                explanation: "LSI must be created when creating the table and cannot be added later. GSI can be added after table creation. LSI shares the same partition key but uses a different sort key."
+            },
+            {
+                section: "S3 / Lambda / DynamoDB",
+                question: "When a new file is uploaded to S3, a record should be automatically added to DynamoDB. What is the most appropriate solution?",
+                options: [
+                    "Lambda polling S3 bucket",
+                    "CloudWatch Events scheduled to scan S3",
+                    "Use S3 Select to query and write to DynamoDB",
+                    "Create S3 event notification to trigger Lambda → Lambda writes to DynamoDB"
+                ],
+                correct: 3,
+                explanation: "Event-driven architecture is the AWS best practice. No polling or scheduled scanning needed. S3 event notifications trigger Lambda in real-time when objects are created."
+            },
+            {
+                section: "DynamoDB CLI",
+                question: "When using the AWS CLI to scan a DynamoDB table, which parameter should be used to retrieve only a subset of attributes?",
+                options: [
+                    "--select",
+                    "--projection-expression",
+                    "--filter-expression",
+                    "--attributes"
+                ],
+                correct: 1,
+                explanation: "projection-expression specifies which attributes to return (subset). filter-expression filters items but doesn't reduce the number of attributes returned per item."
+            },
+            {
+                section: "DynamoDB Performance",
+                question: "A DynamoDB table is experiencing a hot partition problem where one partition is overloaded. What is the easiest solution to reduce read load without schema changes?",
+                options: [
+                    "Add a GSI",
+                    "Increase WCU/RCU",
+                    "Re-shard the partition key",
+                    "Use DynamoDB DAX (DynamoDB Accelerator)"
+                ],
+                correct: 3,
+                explanation: "DAX is an in-memory cache for DynamoDB that reduces read load on the table. It requires no schema changes and is easy to deploy. Other options require more significant changes or don't address caching."
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let answered = false;
+
+        function renderQuestion() {
+            const container = document.getElementById('quizContainer');
+            const question = quizData[currentQuestion];
+            
+            container.innerHTML = `
+                <div class="quiz-card">
+                    <div class="question-header">
+                        <span class="question-number">Question ${currentQuestion + 1}/${quizData.length}</span>
+                        <span class="section-badge">${question.section}</span>
+                    </div>
+                    <div class="question-text">${question.question}</div>
+                    <div class="options" id="options">
+                        ${question.options.map((opt, idx) => `
+                            <label class="option" data-index="${idx}">
+                                <input type="radio" name="answer" value="${idx}">
+                                <span>${String.fromCharCode(65 + idx)}. ${opt}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                    <button class="submit-btn" id="submitBtn" onclick="checkAnswer()">Check Answer</button>
+                    <div class="explanation" id="explanation">
+                        <h3>💡 Explanation</h3>
+                        <p><strong>Correct Answer: ${String.fromCharCode(65 + question.correct)}</strong></p>
+                        <p>${question.explanation}</p>
+                    </div>
+                    <button class="next-btn" id="nextBtn" onclick="nextQuestion()">
+                        ${currentQuestion < quizData.length - 1 ? 'Next Question →' : 'View Results'}
+                    </button>
+                </div>
+            `;
+            
+            answered = false;
+            updateProgress();
+            
+            const options = document.querySelectorAll('.option');
+            options.forEach(opt => {
+                opt.addEventListener('click', () => {
+                    if (!answered) {
+                        options.forEach(o => o.classList.remove('selected'));
+                        opt.classList.add('selected');
+                        opt.querySelector('input').checked = true;
+                    }
+                });
+            });
+        }
+
+        function checkAnswer() {
+            if (answered) return;
+            
+            const selected = document.querySelector('input[name="answer"]:checked');
+            if (!selected) {
+                alert('Please select an answer!');
+                return;
+            }
+            
+            answered = true;
+            const selectedIndex = parseInt(selected.value);
+            const correctIndex = quizData[currentQuestion].correct;
+            const options = document.querySelectorAll('.option');
+            
+            options.forEach((opt, idx) => {
+                opt.style.pointerEvents = 'none';
+                if (idx === correctIndex) {
+                    opt.classList.add('correct');
+                } else if (idx === selectedIndex) {
+                    opt.classList.add('incorrect');
+                }
+            });
+            
+            if (selectedIndex === correctIndex) {
+                score++;
+            }
+            
+            document.getElementById('explanation').classList.add('show');
+            document.getElementById('submitBtn').style.display = 'none';
+            document.getElementById('nextBtn').classList.add('show');
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            if (currentQuestion < quizData.length) {
+                renderQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function updateProgress() {
+            const progress = ((currentQuestion + 1) / quizData.length) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        function showResults() {
+            document.getElementById('quizContainer').style.display = 'none';
+            const summary = document.getElementById('scoreSummary');
+            document.getElementById('finalScore').textContent = `${score}/${quizData.length}`;
+            summary.classList.add('show');
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            document.getElementById('quizContainer').style.display = 'block';
+            document.getElementById('scoreSummary').classList.remove('show');
+            renderQuestion();
+        }
+
+        renderQuestion();
+    </script>
+</body>
+</html>
